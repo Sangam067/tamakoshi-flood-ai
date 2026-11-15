@@ -25,15 +25,7 @@ def load_bundle():
     return joblib.load("tamakoshi_ultimate_model.joblib")
 
 
-try:
-    bundle = load_bundle()
-except ValueError as err:
-    st.error(
-        f"Model binary compatibility error under Python {sys.version.split()[0]}: `{err}`. "
-        "Delete this app on Streamlit Cloud and redeploy with **Advanced settings → Python version → 3.12**."
-    )
-    st.stop()
-
+bundle = load_bundle()
 base_models = bundle["base_models"]
 model_names = bundle["model_names"]
 meta_learner = bundle["meta_learner"]
