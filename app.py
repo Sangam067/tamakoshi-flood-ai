@@ -247,17 +247,15 @@ severity = classify_alert_severity(pred_flow, flood_prob)
 # -----------------------------------------------------------------------------
 # 7. MAIN VIEW HIERARCHY: Top Command Header & Data Lineage
 # -----------------------------------------------------------------------------
-top_c1, top_c2 = st.columns([8, 4])
+top_c1, top_c2, top_c3 = st.columns([7, 3, 2], vertical_alignment="center")
 with top_c1:
     st.markdown(
         f"""
-        <div style="margin-bottom: 4px;">
-            <span style="font-size: 1.45rem; font-weight: 800; color: #0F172A; letter-spacing: -0.01em;">
+        <div style="margin-bottom: 6px; color: {PALETTE['text_primary']}; font-size: 28px; font-weight: 700; line-height: 1.2;">
                 Tamakoshi River Flood Early Warning Command Center
-            </span>
         </div>
-        <div style="font-size: 0.82rem; color: #64748B;">
-            Dolakha Watershed • Tsho Rolpa Glacier (4,580m) to Singati Gorge (1,250m) • Hydrological Decision Support
+        <div style="font-size: 15px; color: {PALETTE['text_secondary']};">
+            Dolakha Watershed, Nepal · Tsho Rolpa to Singati Gorge
         </div>
         """,
         unsafe_allow_html=True,
@@ -265,43 +263,34 @@ with top_c1:
 with top_c2:
     st.markdown(
         f"""
-        <div style="text-align: right; font-size: 0.80rem; color: #64748B; padding-top: 4px;">
-            <div><b>Data Stream:</b> <span class="status-badge" style="margin-left: 4px;"><span class="status-dot" style="background:#16A34A;"></span>{data_source_label}</span></div>
-            <div style="margin-top: 4px;"><b>Last Synced:</b> <span style="color: #0F172A; font-weight: 600;">{data_synced_at}</span></div>
+        <div style="font-size: 13px; color: {PALETTE['text_secondary']}; line-height: 1.6;">
+            <div><strong>Source</strong> <span class="status-badge">{data_source_label}</span></div>
+            <div style="margin-top: 4px;"><strong>Last synced</strong> {data_synced_at}</div>
         </div>
         """,
         unsafe_allow_html=True,
     )
+with top_c3:
+    st.toggle(
+        "Dark theme",
+        key="dark_theme",
+        help="Switch between light and dark display themes.",
+    )
 
-st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 8. HIERARCHY STEP 1: Emergency Action & Severity Status Banner
 # -----------------------------------------------------------------------------
 st.markdown(
     f"""
-    <div class="severity-banner" style="border-left-color: {severity['border']};">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-            <div class="severity-tag" style="background: {severity['bg']}; color: {severity['color']}; border: 1px solid {severity['border']};">
-                <span class="status-dot" style="background: {severity['color']};"></span>
-                LEVEL {severity['level_num']} ALERT: {severity['tier']}
-            </div>
-            <div style="font-size: 0.74rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em;">
-                Threshold: {DANGER_THRESHOLD:.2f} m³/s
-            </div>
+    <div class="severity-banner" style="--status-color: {severity['color']}; --status-tint: {severity['bg']};">
+        <div class="severity-tag">
+            <span class="severity-icon" aria-hidden="true">{severity['icon']}</span>
+            <span>{severity['tier']}</span>
         </div>
-        <div class="severity-title" style="color: {severity['color']};">
-            {severity['headline']}
-        </div>
-        <div class="severity-body">
-            {severity['summary']}
-        </div>
-        <div style="margin-top: 12px; font-weight: 700; font-size: 0.85rem; color: #0F172A; letter-spacing: 0.03em;">
-            {severity['protocol_header']}
-        </div>
-        <ul class="action-list">
-            {''.join(f"<li>{item}</li>" for item in severity['protocols'])}
-        </ul>
+        <div class="severity-title">{severity['headline']}</div>
+        <div class="severity-body">{severity['action']}</div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -310,21 +299,18 @@ st.markdown(
 # -----------------------------------------------------------------------------
 # 9. HIERARCHY STEP 2: 4 Primary KPI Cards
 # -----------------------------------------------------------------------------
-kpi_c1, kpi_c2, kpi_c3, kpi_c4 = st.columns(4)
+kpi_grid = st.container(key="kpi-grid")
+kpi_c1, kpi_c2, kpi_c3, kpi_c4 = kpi_grid.columns(4)
 
 with kpi_c1:
-    delta_color = PALETTE["emergency"]["color"] if delta_pred > 0 else PALETTE["normal"]["color"]
     st.markdown(
         f"""
         <div class="command-card">
-            <div class="kpi-label">Forecast Tomorrow Flow</div>
+            <div class="kpi-label">Tomorrow's river flow</div>
             <div class="kpi-value" style="color: {severity['color']};">
-                {pred_flow:.2f} <span style="font-size: 1.05rem; font-weight: 600; color: #64748B;">m³/s</span>
+                {pred_flow:.2f} <span style="font-size: 13px; font-weight: 500; color: {PALETTE['text_secondary']};">m³/s</span>
             </div>
-            <div class="kpi-meta" style="color: {delta_color}; font-weight: 600;">
-                <span class="status-dot" style="background: {delta_color};"></span>
-                {delta_pred:+.2f} m³/s vs today ({active_inputs['q_mid']:.2f} m³/s)
-            </div>
+            <div class="kpi-meta">Change from today's reading: {delta_pred:+.2f} m³/s</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -335,14 +321,11 @@ with kpi_c2:
     st.markdown(
         f"""
         <div class="command-card">
-            <div class="kpi-label">80% Confidence Interval</div>
-            <div class="kpi-value" style="color: #0F172A;">
-                {low_flow:.2f} – {high_flow:.2f} <span style="font-size: 1.05rem; font-weight: 600; color: #64748B;">m³/s</span>
+            <div class="kpi-label">Forecast range</div>
+            <div class="kpi-value">
+                {low_flow:.2f}–{high_flow:.2f} <span style="font-size: 13px; font-weight: 500; color: {PALETTE['text_secondary']};">m³/s</span>
             </div>
-            <div class="kpi-meta" style="color: #475569;">
-                <span class="status-dot" style="background: #0F172A;"></span>
-                Quantile 10%–90% spread: ±{ci_half:.2f} m³/s
-            </div>
+            <div class="kpi-meta">Model's 80% prediction interval</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -354,14 +337,11 @@ with kpi_c3:
     st.markdown(
         f"""
         <div class="command-card">
-            <div class="kpi-label">Channel Safety Margin</div>
+            <div class="kpi-label">Margin to model threshold</div>
             <div class="kpi-value" style="color: {severity['color']};">
-                {freeboard:+.2f} <span style="font-size: 1.05rem; font-weight: 600; color: #64748B;">m³/s</span>
+                {freeboard:+.2f} <span style="font-size: 13px; font-weight: 500; color: {PALETTE['text_secondary']};">m³/s</span>
             </div>
-            <div class="kpi-meta" style="color: #64748B;">
-                <span class="status-dot" style="background: {severity['color']};"></span>
-                Danger: {DANGER_THRESHOLD:.2f} m³/s • Buffer: {YELLOW_THRESHOLD:.2f} m³/s
-            </div>
+            <div class="kpi-meta">Threshold not yet independently validated</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -371,14 +351,11 @@ with kpi_c4:
     st.markdown(
         f"""
         <div class="command-card">
-            <div class="kpi-label">AI Breach Probability</div>
+            <div class="kpi-label">Estimated flood probability</div>
             <div class="kpi-value" style="color: {severity['color']};">
-                {flood_prob:.1f}<span style="font-size: 1.15rem; font-weight: 600; color: #64748B;">%</span>
+                {flood_prob:.1f}<span style="font-size: 13px; font-weight: 500; color: {PALETTE['text_secondary']};">%</span>
             </div>
-            <div class="kpi-meta" style="color: {severity['color']}; font-weight: 700;">
-                <span class="status-dot" style="background: {severity['color']};"></span>
-                Threat Level: {severity['tier']}
-            </div>
+            <div class="kpi-meta">Model estimate, not an official alert</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -408,32 +385,32 @@ with col_hydro:
             x=np.concatenate([future_hours, future_hours[::-1]]),
             y=np.concatenate([ci_upper, ci_lower[::-1]]),
             fill="toself",
-            fillcolor="rgba(15, 23, 42, 0.08)",
-            line=dict(color="rgba(0,0,0,0)"),
+            fillcolor=rgba(PALETTE["accent"], 0.14),
+            line=dict(color=rgba(PALETTE["accent"], 0)),
             hoverinfo="skip",
             name="80% Prediction Interval",
         )
     )
-    # Sensor History (Solid Black)
+    # Sensor history uses neutral text color; the forecast remains the UI accent.
     fig_hydro.add_trace(
         go.Scatter(
             x=timeline_hours[timeline_hours <= 0],
             y=past_curve,
             mode="lines+markers",
             name="Telemetry History (T-24h to T0)",
-            line=dict(color="#0F172A", width=3),
-            marker=dict(size=4, color="#0F172A"),
+            line=dict(color=PALETTE["text_secondary"], width=2),
+            marker=dict(size=4, color=PALETTE["text_secondary"]),
         )
     )
-    # AI 24h Forecast (Green for Normal, Red for Alert)
+    # The forecast line is always the UI accent, separate from alert colors.
     fig_hydro.add_trace(
         go.Scatter(
             x=timeline_hours[timeline_hours >= 0],
             y=future_curve,
             mode="lines+markers",
             name="AI Forecast (T0 to T+24h)",
-            line=dict(color=severity["color"], width=3.5, dash="dash"),
-            marker=dict(size=6, symbol="diamond", color=severity["color"]),
+            line=dict(color=PALETTE["accent"], width=3, dash="solid"),
+            marker=dict(size=6, symbol="circle", color=PALETTE["accent"]),
         )
     )
     # Safety Threshold Lines (Red & Amber)
@@ -442,7 +419,7 @@ with col_hydro:
         line_dash="dot",
         line_color=PALETTE["emergency"]["color"],
         line_width=2,
-        annotation_text=f"Red Danger Line ({DANGER_THRESHOLD:.2f} m³/s)",
+        annotation_text=f"Model threshold (unverified) · {DANGER_THRESHOLD:.2f} m³/s",
         annotation_position="top right",
         annotation_font=dict(color=PALETTE["emergency"]["color"], size=10),
     )
@@ -451,7 +428,7 @@ with col_hydro:
         line_dash="dashdot",
         line_color=PALETTE["watch"]["color"],
         line_width=1.5,
-        annotation_text=f"Yellow Watch Buffer ({YELLOW_THRESHOLD:.2f} m³/s)",
+        annotation_text=f"Model watch line (unverified) · {YELLOW_THRESHOLD:.2f} m³/s",
         annotation_position="bottom right",
         annotation_font=dict(color=PALETTE["watch"]["color"], size=10),
     )
@@ -459,38 +436,47 @@ with col_hydro:
         template="plotly_white",
         paper_bgcolor=PALETTE["bg_surface"],
         plot_bgcolor=PALETTE["bg_surface"],
-        xaxis=dict(title="Lead Time (Hours from Present T0)", gridcolor=PALETTE["border_subtle"], zeroline=False),
-        yaxis=dict(title="Discharge at Singati Gorge (m³/s)", gridcolor=PALETTE["border_subtle"], zeroline=False),
+        font=dict(family="Inter, Arial, sans-serif", color=PALETTE["text_primary"], size=13),
+        xaxis=dict(title="Hours from now", gridcolor=PALETTE["border_subtle"], zeroline=False, linecolor=PALETTE["border_subtle"]),
+        yaxis=dict(title="River flow at Singati (m³/s)", gridcolor=PALETTE["border_subtle"], zeroline=False, linecolor=PALETTE["border_subtle"]),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11, color=PALETTE["text_primary"])),
         margin=dict(l=24, r=18, t=28, b=24),
         height=370,
     )
-    st.plotly_chart(fig_hydro, use_container_width=True)
+    st.plotly_chart(fig_hydro, use_container_width=True, config={"responsive": True, "displaylogo": False})
 
 with col_map:
-    st.markdown("<div class='kpi-label'>3D River Corridor & Gauging Network</div>", unsafe_allow_html=True)
+    st.markdown("<div class='kpi-label'>River corridor monitoring stations</div>", unsafe_allow_html=True)
 
-    def station_severity_color(val: float, is_target: bool = False):
-        check_val = pred_flow if is_target else val
+    def station_severity(val: float, is_target: bool = False) -> dict:
+        if is_target:
+            return severity
+        check_val = val
         if check_val >= DANGER_THRESHOLD:
-            return [220, 38, 38, 240]   # Vivid Red
+            level_name = "emergency"
+        elif check_val >= (DANGER_THRESHOLD - 0.35):
+            level_name = "warning"
         elif check_val >= YELLOW_THRESHOLD:
-            return [217, 119, 6, 230]   # Amber Watch
+            level_name = "watch"
         else:
-            return [22, 163, 74, 220]   # Vivid Green
+            level_name = "normal"
+        return PALETTE[level_name]
 
     map_stations_data = [
-        {"name": "1. Tsho Rolpa Glacier (4,580m)", "lat": 27.8617, "lon": 86.4769, "flow": active_inputs["q_glacier"], "color": station_severity_color(active_inputs["q_glacier"]), "height": max(300, active_inputs["q_glacier"] * 1600 + 400)},
-        {"name": "2. Gongar Dam Intake (1,990m)", "lat": 27.8442, "lon": 86.2205, "flow": active_inputs["q_upper"], "color": station_severity_color(active_inputs["q_upper"]), "height": max(300, active_inputs["q_upper"] * 1200 + 400)},
-        {"name": "3. Singati Gorge Target (1,250m)", "lat": 27.7314, "lon": 86.1628, "flow": pred_flow, "color": station_severity_color(pred_flow, is_target=True), "height": max(300, pred_flow * 1400 + 500)},
-        {"name": "4. Lower Confluence (880m)", "lat": 27.5250, "lon": 86.0750, "flow": active_inputs["q_lower"], "color": station_severity_color(active_inputs["q_lower"]), "height": max(300, active_inputs["q_lower"] * 800 + 300)},
+        {"name": "Tsho Rolpa Glacier", "label": "1 · Tsho Rolpa", "lat": 27.8617, "lon": 86.4769, "flow": active_inputs["q_glacier"], "status": station_severity(active_inputs["q_glacier"]), "height": max(300, active_inputs["q_glacier"] * 1600 + 400)},
+        {"name": "Gongar Dam Intake", "label": "2 · Gongar", "lat": 27.8442, "lon": 86.2205, "flow": active_inputs["q_upper"], "status": station_severity(active_inputs["q_upper"]), "height": max(300, active_inputs["q_upper"] * 1200 + 400)},
+        {"name": "Singati Gorge Target", "label": "3 · Singati forecast", "lat": 27.7314, "lon": 86.1628, "flow": pred_flow, "status": station_severity(pred_flow, is_target=True), "height": max(300, pred_flow * 1400 + 500)},
+        {"name": "Lower Confluence", "label": "4 · Lower Confluence", "lat": 27.5250, "lon": 86.0750, "flow": active_inputs["q_lower"], "status": station_severity(active_inputs["q_lower"]), "height": max(300, active_inputs["q_lower"] * 800 + 300)},
     ]
+    for station in map_stations_data:
+        station["color"] = station["status"]["rgb"] + [230]
+        station["map_label"] = f"{station['status']['icon']}  {station['label']} · {station['status']['label']}"
     df_map_stations = pd.DataFrame(map_stations_data)
 
     corridor_arcs = pd.DataFrame([
-        {"from_lon": 86.4769, "from_lat": 27.8617, "to_lon": 86.2205, "to_lat": 27.8442, "color": station_severity_color(active_inputs["q_glacier"])},
-        {"from_lon": 86.2205, "from_lat": 27.8442, "to_lon": 86.1628, "to_lat": 27.7314, "color": station_severity_color(active_inputs["q_upper"])},
-        {"from_lon": 86.1628, "from_lat": 27.7314, "to_lon": 86.0750, "to_lat": 27.5250, "color": station_severity_color(pred_flow, is_target=True)},
+        {"from_lon": 86.4769, "from_lat": 27.8617, "to_lon": 86.2205, "to_lat": 27.8442, "color": map_stations_data[0]["color"]},
+        {"from_lon": 86.2205, "from_lat": 27.8442, "to_lon": 86.1628, "to_lat": 27.7314, "color": map_stations_data[1]["color"]},
+        {"from_lon": 86.1628, "from_lat": 27.7314, "to_lon": 86.0750, "to_lat": 27.5250, "color": map_stations_data[2]["color"]},
     ])
 
     map_view = pdk.ViewState(latitude=27.72, longitude=86.24, zoom=9.8, pitch=52, bearing=-18)
@@ -503,17 +489,28 @@ with col_map:
         get_target_position=["to_lon", "to_lat"], get_source_color="color", get_target_color="color",
         get_width=4.5, pickable=True,
     )
+    labels_layer = pdk.Layer(
+        "TextLayer",
+        data=df_map_stations,
+        get_position=["lon", "lat"],
+        get_text="map_label",
+        get_color="color",
+        get_size=14,
+        get_pixel_offset=[0, -18],
+        get_alignment_baseline="'bottom'",
+        pickable=True,
+    )
 
     deck_chart = pdk.Deck(
-        layers=[arc_layer, col_layer],
+        layers=[arc_layer, col_layer, labels_layer],
         initial_view_state=map_view,
-        map_style="carto-positron",  # Clean, reliable light theme cartographic style
+        map_style="carto-positron",
         tooltip={
             "html": (
-                "<div style='background:#FFFFFF; padding:8px 12px; border-radius:6px; border:1px solid #CBD5E1; color:#0F172A; box-shadow:0 2px 6px rgba(0,0,0,0.1); font-family:sans-serif;'>"
+                f"<div style='background:{PALETTE['surface']}; padding:8px 12px; border-radius:8px; border:1px solid {PALETTE['border']}; color:{PALETTE['text']}; box-shadow:0 2px 6px {PALETTE['shadow']}; font-family:Inter, sans-serif;'>"
                 "<b>{name}</b><br>Discharge: <b>{flow} m³/s</b></div>"
             ),
-            "style": {"color": "#0F172A"},
+            "style": {"color": PALETTE["text"]},
         },
     )
     st.pydeck_chart(deck_chart)
