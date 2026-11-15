@@ -525,15 +525,15 @@ else:
         sim_rain_glacier = st.number_input("Glacier rain today (mm)", step=1.0, key="sim_rain_glacier")
         sim_rain_3d = st.number_input("3-day cumulative rain (mm)", step=5.0, key="sim_rain_3d")
         sim_rain_7d = st.number_input("7-day cumulative rain (mm)", step=5.0, key="sim_rain_7d")
-        sim_rain_hours = st.slider("Rain Duration Hours (Cloudburst = low)", 1, 24, int(sim_defaults[9]), key="sim_rain_hours")
+        sim_rain_hours = st.slider("Rain Duration Hours (Cloudburst = low)", 1, 24, int(st.session_state.get("sim_rain_hours", CUSTOM_SIMULATION_DEFAULTS[9])), key="sim_rain_hours")
 
     with st.sidebar.expander("Soil Moisture & Thermal Melt Dynamics", expanded=False):
-        sim_soil_sat = st.slider("Deep soil saturation (%)", 10, 50, key="sim_soil_sat")
+        sim_soil_sat = st.slider("Deep soil saturation (%)", 10, 50, int(st.session_state.get("sim_soil_sat", CUSTOM_SIMULATION_DEFAULTS[10])), key="sim_soil_sat")
         sim_tmax = st.number_input("Valley max temperature (°C)", step=0.5, key="sim_tmax")
         sim_tmin = st.number_input("Valley min temperature (°C)", step=0.5, key="sim_tmin")
         sim_snow = st.number_input("Glacier snowfall today (cm)", step=0.5, key="sim_snow")
         sim_solar = st.number_input("Solar radiation (MJ/m²)", step=0.5, key="sim_solar")
-        sim_month = st.slider("Month of year", 1, 12, key="sim_month")
+        sim_month = st.slider("Month of year", 1, 12, int(st.session_state.get("sim_month", CUSTOM_SIMULATION_DEFAULTS[15])), key="sim_month")
 
     active_inputs = {
         "q_mid": sim_q_mid, "q_yesterday": sim_q_yesterday, "q_glacier": sim_q_glacier,
