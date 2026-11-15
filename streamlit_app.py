@@ -3,6 +3,7 @@ Tamakoshi Himalayan Flood AI | Early Warning Command Center
 ============================================================
 Life-Safety Early Warning Dashboard & Hydrological Decision Support System
 Catchment: Tamakoshi River Corridor, Dolakha District, Nepal (4,580m -> 1,250m ASL)
+Theme: Light Theme (Black, White, Red, Green & Life-Safety Accents)
 """
 
 import sys
@@ -46,58 +47,58 @@ from services.tamakoshi_api import (
 )
 
 # -----------------------------------------------------------------------------
-# 2. Design System Tokens & Unified Life-Safety Palette
+# 2. Design System Tokens: Clean Light Theme (Black, White, Red, Green)
 # -----------------------------------------------------------------------------
 PALETTE = {
-    # Surfaces & Canvas
-    "bg_main": "#0B1120",        # Deep slate base canvas
-    "bg_surface": "#131D31",     # Primary card surface
-    "bg_surface_alt": "#1A2642", # Elevated container / header
-    "border_subtle": "#24324D",  # Subtle structural dividers
-    "border_focus": "#38BDF8",   # Primary interactive focus
+    # Surfaces & Canvas (Crisp Light Theme)
+    "bg_main": "#F8FAFC",        # Soft light neutral canvas
+    "bg_surface": "#FFFFFF",     # Crisp pure white card surface
+    "bg_surface_alt": "#F1F5F9", # Elevated container / header / tabs
+    "border_subtle": "#E2E8F0",  # Clean light border divider
+    "border_focus": "#0F172A",   # High-contrast black/slate focus
 
-    # Typography
-    "text_primary": "#F8FAFC",   # Slate 50 (High contrast)
-    "text_secondary": "#94A3B8", # Slate 400 (Informational)
-    "text_muted": "#64748B",     # Slate 500 (Metadata)
+    # Typography (Black / Slate Grays)
+    "text_primary": "#0F172A",   # Slate 900 (Deep near-black, high legibility)
+    "text_secondary": "#475569", # Slate 600 (Informational)
+    "text_muted": "#64748B",     # Slate 500 (Metadata, timestamps)
 
-    # Neutral Interactive Accent
-    "accent_primary": "#38BDF8", # Sky 400 (Buttons, highlights)
-    "accent_cyan": "#06B6D4",    # Cyan 500 (Sensor indicators)
+    # Primary Functional Accent (Black / Dark Slate)
+    "accent_primary": "#0F172A", # High-contrast primary interactive tone
+    "accent_subtle": "#334155",  # Secondary dark slate
 
-    # Life-Safety Severity Scale (USED STRICTLY FOR ALERTS - NEVER DECORATION)
+    # Strict Life-Safety Signaling Scale (Strictly Red & Green, with Amber/Orange for intermediate watch/warning)
     "emergency": {
         "tier": "EMERGENCY",
         "icon": "🚨",
-        "color": "#EF4444",
-        "bg": "rgba(239, 68, 68, 0.12)",
-        "border": "rgba(239, 68, 68, 0.50)",
+        "color": "#DC2626",      # Vivid High-Contrast Red (Danger Line 6.69 m³/s)
+        "bg": "rgba(220, 38, 38, 0.08)",
+        "border": "#DC2626",
     },
     "warning": {
         "tier": "WARNING",
         "icon": "⚠️",
-        "color": "#F97316",
-        "bg": "rgba(249, 115, 22, 0.12)",
-        "border": "rgba(249, 115, 22, 0.50)",
+        "color": "#EA580C",      # High-Contrast Orange (Pre-Breach Warning)
+        "bg": "rgba(234, 88, 12, 0.08)",
+        "border": "#EA580C",
     },
     "watch": {
         "tier": "WATCH",
         "icon": "🟡",
-        "color": "#F59E0B",
-        "bg": "rgba(245, 158, 11, 0.12)",
-        "border": "rgba(245, 158, 11, 0.50)",
+        "color": "#D97706",      # High-Contrast Amber (Watch Buffer 6.02 m³/s)
+        "bg": "rgba(217, 119, 6, 0.08)",
+        "border": "#D97706",
     },
     "normal": {
         "tier": "NORMAL",
         "icon": "✅",
-        "color": "#10B981",
-        "bg": "rgba(16, 185, 129, 0.12)",
-        "border": "rgba(16, 185, 129, 0.50)",
+        "color": "#16A34A",      # Vivid High-Contrast Green (Safe Baseline)
+        "bg": "rgba(22, 163, 74, 0.08)",
+        "border": "#16A34A",
     },
 }
 
 # -----------------------------------------------------------------------------
-# 3. Streamlit Page Configuration & Global CSS
+# 3. Streamlit Page Configuration & Global Light CSS
 # -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="Tamakoshi Himalayan Flood AI | Early Warning Command Center",
@@ -106,9 +107,8 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-st.markdown(
-    f"""
-    <style>
+CUSTOM_CSS = f"""
+<style>
     /* CSS Variables bound strictly to PALETTE */
     :root {{
         --bg-main: {PALETTE["bg_main"]};
@@ -126,7 +126,7 @@ st.markdown(
     html, body, .stApp {{
         background: var(--bg-main) !important;
         color: var(--text-primary) !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
     }}
 
     .main .block-container {{
@@ -139,9 +139,9 @@ st.markdown(
         visibility: hidden !important;
     }}
 
-    /* Sidebar styled strictly as a filter panel */
+    /* Sidebar styled strictly as a filter panel in light theme */
     section[data-testid="stSidebar"] {{
-        background: var(--bg-main) !important;
+        background: #FFFFFF !important;
         border-right: 1px solid var(--border-subtle) !important;
     }}
     section[data-testid="stSidebar"] .block-container {{
@@ -152,31 +152,32 @@ st.markdown(
     .command-card {{
         background: var(--bg-surface);
         border: 1px solid var(--border-subtle);
-        border-radius: 12px;
+        border-radius: 10px;
         padding: 16px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-        transition: border-color 0.2s ease;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }}
     .command-card:hover {{
-        border-color: var(--border-focus);
+        border-color: #CBD5E1;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
     }}
 
     .kpi-label {{
-        font-size: 0.80rem;
+        font-size: 0.78rem;
         font-weight: 700;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
         color: var(--text-secondary);
-        margin-bottom: 6px;
+        margin-bottom: 4px;
     }}
     .kpi-value {{
-        font-size: 1.75rem;
+        font-size: 1.80rem;
         font-weight: 800;
         line-height: 1.2;
         color: var(--text-primary);
     }}
     .kpi-meta {{
-        font-size: 0.82rem;
+        font-size: 0.80rem;
         font-weight: 500;
         margin-top: 6px;
         color: var(--text-muted);
@@ -184,10 +185,11 @@ st.markdown(
 
     /* Action Banner */
     .severity-banner {{
-        border-radius: 12px;
+        border-radius: 10px;
         padding: 16px 20px;
         margin-bottom: 16px;
         border: 1px solid;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }}
     .severity-title {{
         font-size: 1.15rem;
@@ -199,15 +201,15 @@ st.markdown(
         margin-bottom: 6px;
     }}
     .severity-body {{
-        font-size: 0.95rem;
+        font-size: 0.92rem;
         line-height: 1.55;
         color: var(--text-primary);
     }}
     .action-list {{
         margin: 8px 0 0 0;
         padding-left: 20px;
-        font-size: 0.90rem;
-        color: #E2E8F0;
+        font-size: 0.88rem;
+        color: #1E293B;
         line-height: 1.6;
     }}
 
@@ -224,13 +226,20 @@ st.markdown(
         color: var(--text-secondary);
         padding: 10px 16px;
         font-weight: 600;
-        font-size: 0.90rem;
+        font-size: 0.88rem;
         min-height: 44px;
+        transition: all 0.15s ease;
+    }}
+    .stTabs [role="tab"]:hover {{
+        color: var(--text-primary);
+        border-color: #CBD5E1;
     }}
     .stTabs [role="tab"][aria-selected="true"] {{
         background: var(--bg-surface-alt);
-        border-color: var(--accent-primary);
-        color: var(--text-primary);
+        border-color: #CBD5E1;
+        border-top: 3px solid var(--accent-primary) !important;
+        color: var(--text-primary) !important;
+        font-weight: 700;
     }}
 
     /* Streamlit controls minimum tap target 44px */
@@ -238,21 +247,36 @@ st.markdown(
         min-height: 44px;
         border-radius: 8px;
         font-weight: 600;
-        border: 1px solid var(--border-subtle);
-        background: var(--bg-surface);
+        border: 1px solid #CBD5E1;
+        background: #FFFFFF;
         color: var(--text-primary);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: all 0.15s ease-in-out;
     }}
     .stButton > button:hover {{
         border-color: var(--accent-primary);
         color: var(--accent-primary);
+        background: var(--bg-surface-alt);
     }}
     .stSelectbox > div, .stSlider > div, .stNumberInput > div {{
         border-radius: 8px;
     }}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+
+    /* Header Badges */
+    .badge {{
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }}
+</style>
+"""
+st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 4. Safe Model Loading & Core Data Logic
@@ -279,7 +303,7 @@ def classify_alert_severity(pred_flow: float, flood_prob: float) -> dict:
                 f"95th-percentile safety threshold of <b>{DANGER_THRESHOLD:.2f} m³/s</b> by "
                 f"<b>{(pred_flow - DANGER_THRESHOLD):+.2f} m³/s</b> with <b>{flood_prob:.1f}%</b> inundation likelihood."
             ),
-            "protocol_header": "🚨 Mandated Emergency Life-Safety Actions (Level 4):",
+            "protocol_header": "🚨 Mandated Emergency Life-Safety Actions (Level 4 - RED):",
             "protocols": [
                 "<b>Immediate Siren Alarms:</b> Broadcast VHF/SMS emergency evacuation to Singati Bazaar, Gongar, Jagat, and Lamabagar.",
                 "<b>Dam Radial Spillway Gates:</b> Actuate Upper Tamakoshi (456 MW) spillways immediately for reservoir drawdown buffering.",
@@ -296,7 +320,7 @@ def classify_alert_severity(pred_flow: float, flood_prob: float) -> dict:
                 f"Predicted discharge reaches <b>{pred_flow:.2f} m³/s</b> with rapid acceleration. "
                 f"Channel clearance is only <b>{(DANGER_THRESHOLD - pred_flow):.2f} m³/s</b> with <b>{flood_prob:.1f}%</b> breach probability."
             ),
-            "protocol_header": "⚠️ High-Alert Standby Actions (Level 3):",
+            "protocol_header": "⚠️ High-Alert Standby Actions (Level 3 - WARNING):",
             "protocols": [
                 "<b>Pre-Warning Sirens:</b> Sound advisory sirens in low-lying riverside settlement zones along Singati corridor.",
                 "<b>Continuous Telemetry Polling:</b> Switch upstream radar gauges at Tsho Rolpa (4,580m) to high-frequency 10-minute cycles.",
@@ -313,7 +337,7 @@ def classify_alert_severity(pred_flow: float, flood_prob: float) -> dict:
                 f"Predicted discharge reaches <b>{pred_flow:.2f} m³/s</b>, entering the 10% safety buffer zone "
                 f"(<b>{YELLOW_THRESHOLD:.2f} – {DANGER_THRESHOLD:.2f} m³/s</b>). AI inundation likelihood: <b>{flood_prob:.1f}%</b>."
             ),
-            "protocol_header": "🟡 Active Hydrological Watch Actions (Level 2):",
+            "protocol_header": "🟡 Active Hydrological Watch Actions (Level 2 - WATCH):",
             "protocols": [
                 "<b>Floodplain Clearance:</b> Order riverbank sand/gravel excavation crews to immediately evacuate the gorge floodplain.",
                 "<b>Glacial Siphon Surveillance:</b> Monitor Tsho Rolpa moraine lake siphon discharge and positive temperature anomalies.",
@@ -330,7 +354,7 @@ def classify_alert_severity(pred_flow: float, flood_prob: float) -> dict:
                 f"Discharge is safely contained within natural gorge banks at <b>{pred_flow:.2f} m³/s</b> "
                 f"(Clearance to Danger Line: <b>{(DANGER_THRESHOLD - pred_flow):.2f} m³/s</b>). Flood probability: <b>{flood_prob:.1f}%</b>."
             ),
-            "protocol_header": "✅ Standard Sentinel Surveillance (Level 1):",
+            "protocol_header": "✅ Standard Sentinel Surveillance (Level 1 - GREEN):",
             "protocols": [
                 "<b>Nominal Hydro Dispatch:</b> Maintain scheduled 456 MW generation dispatch at Upper Tamakoshi Plant.",
                 "<b>Automated Monitoring:</b> Autonomous GloFAS satellite precipitation and acoustic telemetry polling every 30 minutes.",
@@ -359,13 +383,13 @@ SCENARIOS = {
 st.sidebar.markdown(
     f"""
     <div style="padding: 10px 4px 16px 4px; border-bottom: 1px solid {PALETTE['border_subtle']}; margin-bottom: 14px;">
-        <div style="font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; color: {PALETTE['accent_primary']}; text-transform: uppercase;">
+        <div style="font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; color: {PALETTE['text_secondary']}; text-transform: uppercase;">
             Early Warning Command Center
         </div>
         <div style="font-size: 1.30rem; font-weight: 800; color: {PALETTE['text_primary']}; margin-top: 2px;">
             🏔️ Tamakoshi Flood AI
         </div>
-        <div style="font-size: 0.80rem; color: {PALETTE['text_secondary']}; margin-top: 2px;">
+        <div style="font-size: 0.80rem; color: {PALETTE['text_muted']}; margin-top: 2px;">
             Dolakha Watershed, Nepal
         </div>
     </div>
@@ -498,7 +522,7 @@ with top_c1:
             </span>
         </div>
         <div style="font-size: 0.82rem; color: {PALETTE['text_secondary']};">
-            Dolakha Watershed • Tsho Rolpa Glacier (4,580m) to Singati Gorge (1,250m) • Veritas AI Track 4.3
+            Dolakha Watershed • Tsho Rolpa Glacier (4,580m) to Singati Gorge (1,250m) • Early Warning Telemetry
         </div>
         """,
         unsafe_allow_html=True,
@@ -507,8 +531,8 @@ with top_c2:
     st.markdown(
         f"""
         <div style="text-align: right; font-size: 0.80rem; color: {PALETTE['text_secondary']}; padding-top: 4px;">
-            <div><b>Data Source:</b> <span style="color: {PALETTE['accent_primary']};">{data_source_label}</span></div>
-            <div><b>Last Synced:</b> <span style="color: {PALETTE['text_primary']};">{data_synced_at}</span></div>
+            <div><b>Data Source:</b> <span style="color: {PALETTE['text_primary']}; font-weight: 600;">{data_source_label}</span></div>
+            <div><b>Last Synced:</b> <span style="color: {PALETTE['text_muted']};">{data_synced_at}</span></div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -570,7 +594,7 @@ with kpi_c2:
             <div class="kpi-value" style="color: {PALETTE['text_primary']};">
                 {low_flow:.2f} – {high_flow:.2f} <span style="font-size: 1rem; color: {PALETTE['text_secondary']};">m³/s</span>
             </div>
-            <div class="kpi-meta" style="color: {PALETTE['accent_primary']};">
+            <div class="kpi-meta" style="color: {PALETTE['text_secondary']};">
                 Quantile 10%–90% spread: ±{ci_half:.2f} m³/s
             </div>
         </div>
@@ -636,24 +660,24 @@ with col_hydro:
             x=np.concatenate([future_hours, future_hours[::-1]]),
             y=np.concatenate([ci_upper, ci_lower[::-1]]),
             fill="toself",
-            fillcolor="rgba(56, 189, 248, 0.12)",
-            line=dict(color="rgba(255,255,255,0)"),
+            fillcolor="rgba(15, 23, 42, 0.08)",
+            line=dict(color="rgba(0,0,0,0)"),
             hoverinfo="skip",
             name="80% Prediction Interval",
         )
     )
-    # Sensor History
+    # Sensor History (Solid Black)
     fig_hydro.add_trace(
         go.Scatter(
             x=timeline_hours[timeline_hours <= 0],
             y=past_curve,
             mode="lines+markers",
             name="Telemetry History (T-24h to T0)",
-            line=dict(color=PALETTE["accent_primary"], width=3),
-            marker=dict(size=4, color=PALETTE["accent_primary"]),
+            line=dict(color="#0F172A", width=3),
+            marker=dict(size=4, color="#0F172A"),
         )
     )
-    # AI 24h Forecast
+    # AI 24h Forecast (Green for Normal, Red for Alert)
     fig_hydro.add_trace(
         go.Scatter(
             x=timeline_hours[timeline_hours >= 0],
@@ -661,10 +685,10 @@ with col_hydro:
             mode="lines+markers",
             name="AI Forecast (T0 to T+24h)",
             line=dict(color=severity["color"], width=3.5, dash="dash"),
-            marker=dict(size=5, color=severity["color"]),
+            marker=dict(size=6, symbol="diamond", color=severity["color"]),
         )
     )
-    # Safety Threshold Lines
+    # Safety Threshold Lines (Red & Amber)
     fig_hydro.add_hline(
         y=DANGER_THRESHOLD,
         line_dash="dot",
@@ -672,6 +696,7 @@ with col_hydro:
         line_width=2,
         annotation_text=f"Red Danger ({DANGER_THRESHOLD:.2f} m³/s)",
         annotation_position="top right",
+        annotation_font=dict(color=PALETTE["emergency"]["color"], size=10),
     )
     fig_hydro.add_hline(
         y=YELLOW_THRESHOLD,
@@ -680,14 +705,15 @@ with col_hydro:
         line_width=1.5,
         annotation_text=f"Yellow Watch ({YELLOW_THRESHOLD:.2f} m³/s)",
         annotation_position="bottom right",
+        annotation_font=dict(color=PALETTE["watch"]["color"], size=10),
     )
     fig_hydro.update_layout(
-        template="plotly_dark",
+        template="plotly_white",
         paper_bgcolor=PALETTE["bg_surface"],
         plot_bgcolor=PALETTE["bg_surface"],
         xaxis=dict(title="Lead Time (Hours from Present T0)", gridcolor=PALETTE["border_subtle"], zeroline=False),
         yaxis=dict(title="Discharge at Singati Gorge (m³/s)", gridcolor=PALETTE["border_subtle"], zeroline=False),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11, color=PALETTE["text_primary"])),
         margin=dict(l=24, r=18, t=28, b=24),
         height=370,
     )
@@ -699,11 +725,11 @@ with col_map:
     def station_severity_color(val: float, is_target: bool = False):
         check_val = pred_flow if is_target else val
         if check_val >= DANGER_THRESHOLD:
-            return [239, 68, 68, 240]   # Red
+            return [220, 38, 38, 240]   # Vivid Red
         elif check_val >= YELLOW_THRESHOLD:
-            return [245, 158, 11, 230]  # Amber
+            return [217, 119, 6, 230]   # Amber Watch
         else:
-            return [16, 185, 129, 220]  # Green
+            return [22, 163, 74, 220]   # Vivid Green
 
     map_stations_data = [
         {"name": "1. Tsho Rolpa Glacier (4,580m)", "lat": 27.8617, "lon": 86.4769, "flow": active_inputs["q_glacier"], "color": station_severity_color(active_inputs["q_glacier"]), "height": max(300, active_inputs["q_glacier"] * 1600 + 400)},
@@ -733,13 +759,13 @@ with col_map:
     deck_chart = pdk.Deck(
         layers=[arc_layer, col_layer],
         initial_view_state=map_view,
-        map_style="mapbox://styles/mapbox/dark-v11",
+        map_style="carto-positron",  # Clean, reliable light theme cartographic style
         tooltip={
             "html": (
-                "<div style='background:#131D31; padding:8px 12px; border-radius:8px; border:1px solid #24324D; color:#F8FAFC;'>"
+                "<div style='background:#FFFFFF; padding:8px 12px; border-radius:6px; border:1px solid #CBD5E1; color:#0F172A; box-shadow:0 2px 6px rgba(0,0,0,0.1); font-family:sans-serif;'>"
                 "<b>{name}</b><br>Discharge: <b>{flow} m³/s</b></div>"
             ),
-            "style": {"color": "white"},
+            "style": {"color": "#0F172A"},
         },
     )
     st.pydeck_chart(deck_chart)
@@ -772,18 +798,19 @@ with tab_gorge:
     <head>
         <meta charset="UTF-8">
         <style>
-            body {{ margin: 0; overflow: hidden; background: #0B1120; font-family: -apple-system, sans-serif; }}
+            body {{ margin: 0; overflow: hidden; background: #F8FAFC; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }}
             #hud {{
                 position: absolute; top: 12px; left: 14px;
-                background: rgba(19, 29, 49, 0.90); border: 1px solid #24324D;
-                border-radius: 8px; padding: 10px 14px; color: #F8FAFC; font-size: 0.80rem;
-                pointer-events: none;
+                background: rgba(255, 255, 255, 0.95); border: 1px solid #CBD5E1;
+                border-radius: 8px; padding: 10px 14px; color: #0F172A; font-size: 0.80rem;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08); pointer-events: none;
             }}
             #hud b {{ color: {severity['color']}; }}
             #hint {{
                 position: absolute; bottom: 10px; right: 14px;
-                background: rgba(19, 29, 49, 0.70); border-radius: 6px; padding: 6px 10px;
-                color: #94A3B8; font-size: 0.72rem; pointer-events: none;
+                background: rgba(255, 255, 255, 0.90); border: 1px solid #E2E8F0;
+                border-radius: 6px; padding: 6px 10px; color: #475569; font-size: 0.72rem;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.05); pointer-events: none;
             }}
         </style>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -791,15 +818,15 @@ with tab_gorge:
     </head>
     <body>
         <div id="hud">
-            <div style="font-weight:700; color:{PALETTE['accent_primary']}; margin-bottom:4px;">Singati Canyon Hydraulic Stage</div>
+            <div style="font-weight:700; color:{PALETTE['text_primary']}; margin-bottom:4px;">Singati Canyon Hydraulic Stage</div>
             <div>Forecast: <b>{pred_flow:.2f} m³/s</b> ({severity['tier']})</div>
             <div>{freeboard_text}</div>
-            <div>Danger Line: {DANGER_THRESHOLD:.2f} m³/s • Buffer: {YELLOW_THRESHOLD:.2f} m³/s</div>
+            <div style="color:#64748B; font-size:0.72rem; margin-top:2px;">Danger Line: {DANGER_THRESHOLD:.2f} m³/s • Buffer: {YELLOW_THRESHOLD:.2f} m³/s</div>
         </div>
         <div id="hint">🖱️ Left-Drag: Rotate | Right-Drag: Pan | Scroll: Zoom</div>
         <script>
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0B1120);
+            scene.background = new THREE.Color(0xF8FAFC);
             const camera = new THREE.PerspectiveCamera(45, window.innerWidth / 480, 0.1, 1000);
             camera.position.set(24, 18, 32);
 
@@ -812,16 +839,16 @@ with tab_gorge:
             controls.dampingFactor = 0.05;
             controls.target.set(0, 1.5, 0);
 
-            // Lighting
-            scene.add(new THREE.AmbientLight(0x38BDF8, 0.40));
-            const sun = new THREE.DirectionalLight(0xFFFFFF, 1.0);
+            // Lighting (Bright Neutral Daylight)
+            scene.add(new THREE.AmbientLight(0xE2E8F0, 0.85));
+            const sun = new THREE.DirectionalLight(0xFFFFFF, 1.2);
             sun.position.set(25, 35, 20);
             scene.add(sun);
-            const alertLight = new THREE.PointLight('{severity["color"]}', 2.0, 40);
+            const alertLight = new THREE.PointLight('{severity["color"]}', 1.5, 40);
             alertLight.position.set(0, 8, 0);
             scene.add(alertLight);
 
-            // Canyon Mesh
+            // Canyon Mesh (Natural Mountain Stone)
             const canyonGeo = new THREE.PlaneGeometry(30, 56, 50, 50);
             canyonGeo.rotateX(-Math.PI / 2);
             const pos = canyonGeo.attributes.position;
@@ -832,23 +859,23 @@ with tab_gorge:
                 pos.setY(i, y);
             }}
             canyonGeo.computeVertexNormals();
-            const canyonMat = new THREE.MeshStandardMaterial({{ color: 0x1E293B, roughness: 0.85, flatShading: true }});
+            const canyonMat = new THREE.MeshStandardMaterial({{ color: 0x94A3B8, roughness: 0.85, flatShading: true }});
             scene.add(new THREE.Mesh(canyonGeo, canyonMat));
 
-            // Dynamic Water Mesh
+            // Dynamic Water Mesh (Green for normal, Red for danger)
             const waterGeo = new THREE.PlaneGeometry(13, 56, 30, 30);
             waterGeo.rotateX(-Math.PI / 2);
             const waterMat = new THREE.MeshStandardMaterial({{
-                color: '{severity["color"]}', roughness: 0.2, metalness: 0.7, transparent: true, opacity: 0.85
+                color: '{severity["color"]}', roughness: 0.2, metalness: 0.6, transparent: true, opacity: 0.88
             }});
             const water = new THREE.Mesh(waterGeo, waterMat);
             water.position.y = -0.9 + {water_height_ratio} * 2.8;
             scene.add(water);
 
-            // Danger Threshold Wireframe
+            // Danger Threshold Wireframe (Red)
             const dangerGeo = new THREE.PlaneGeometry(16, 56);
             dangerGeo.rotateX(-Math.PI / 2);
-            const dangerPlane = new THREE.Mesh(dangerGeo, new THREE.MeshBasicMaterial({{ color: 0xEF4444, wireframe: true, transparent: true, opacity: 0.4 }}));
+            const dangerPlane = new THREE.Mesh(dangerGeo, new THREE.MeshBasicMaterial({{ color: 0xDC2626, wireframe: true, transparent: true, opacity: 0.45 }}));
             dangerPlane.position.y = 1.9;
             scene.add(dangerPlane);
 
@@ -883,7 +910,7 @@ with tab_council:
 
     m_names = list(council_data.keys())
     m_flows = [council_data[m] for m in m_names]
-    m_colors = [PALETTE["accent_primary"] if m != "RidgeCV Meta-Learner" else severity["color"] for m in m_names]
+    m_colors = ["#1E293B" if m != "RidgeCV Meta-Learner" else severity["color"] for m in m_names]
 
     fig_council = go.Figure(
         go.Bar(
@@ -898,7 +925,7 @@ with tab_council:
     fig_council.add_vline(x=DANGER_THRESHOLD, line_dash="dot", line_color=PALETTE["emergency"]["color"], line_width=2)
     fig_council.add_vline(x=YELLOW_THRESHOLD, line_dash="dashdot", line_color=PALETTE["watch"]["color"], line_width=1.5)
     fig_council.update_layout(
-        template="plotly_dark",
+        template="plotly_white",
         paper_bgcolor=PALETTE["bg_surface"],
         plot_bgcolor=PALETTE["bg_surface"],
         xaxis=dict(title="Estimated Discharge Tomorrow (m³/s)", gridcolor=PALETTE["border_subtle"]),
@@ -932,16 +959,16 @@ with tab_gauges:
             title={"text": "Cloudburst Rain Intensity", "font": {"size": 13, "color": PALETTE["text_primary"]}},
             gauge={
                 "axis": {"range": [0, 40], "tickcolor": PALETTE["text_secondary"]},
-                "bar": {"color": PALETTE["accent_primary"]},
+                "bar": {"color": "#0F172A"},
                 "steps": [
-                    {"range": [0, 10], "color": "rgba(16, 185, 129, 0.25)"},
-                    {"range": [10, 20], "color": "rgba(245, 158, 11, 0.25)"},
-                    {"range": [20, 40], "color": "rgba(239, 68, 68, 0.35)"},
+                    {"range": [0, 10], "color": "rgba(22, 163, 74, 0.18)"},
+                    {"range": [10, 20], "color": "rgba(217, 119, 6, 0.18)"},
+                    {"range": [20, 40], "color": "rgba(220, 38, 38, 0.22)"},
                 ],
                 "threshold": {"line": {"color": PALETTE["emergency"]["color"], "width": 3}, "value": 18.0},
             },
         ))
-        fig_g1.update_layout(template="plotly_dark", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
+        fig_g1.update_layout(template="plotly_white", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
         st.plotly_chart(fig_g1, use_container_width=True)
 
     with g2:
@@ -950,16 +977,16 @@ with tab_gauges:
             title={"text": "Antecedent 7-Day Rain", "font": {"size": 13, "color": PALETTE["text_primary"]}},
             gauge={
                 "axis": {"range": [0, 300], "tickcolor": PALETTE["text_secondary"]},
-                "bar": {"color": PALETTE["accent_primary"]},
+                "bar": {"color": "#0F172A"},
                 "steps": [
-                    {"range": [0, 80], "color": "rgba(16, 185, 129, 0.25)"},
-                    {"range": [80, 150], "color": "rgba(245, 158, 11, 0.25)"},
-                    {"range": [150, 300], "color": "rgba(239, 68, 68, 0.35)"},
+                    {"range": [0, 80], "color": "rgba(22, 163, 74, 0.18)"},
+                    {"range": [80, 150], "color": "rgba(217, 119, 6, 0.18)"},
+                    {"range": [150, 300], "color": "rgba(220, 38, 38, 0.22)"},
                 ],
                 "threshold": {"line": {"color": PALETTE["emergency"]["color"], "width": 3}, "value": 140.0},
             },
         ))
-        fig_g2.update_layout(template="plotly_dark", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
+        fig_g2.update_layout(template="plotly_white", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
         st.plotly_chart(fig_g2, use_container_width=True)
 
     with g3:
@@ -968,16 +995,16 @@ with tab_gauges:
             title={"text": "Tsho Rolpa (4,580m) Temp", "font": {"size": 13, "color": PALETTE["text_primary"]}},
             gauge={
                 "axis": {"range": [0, 30], "tickcolor": PALETTE["text_secondary"]},
-                "bar": {"color": PALETTE["accent_primary"]},
+                "bar": {"color": "#0F172A"},
                 "steps": [
-                    {"range": [0, 8], "color": "rgba(16, 185, 129, 0.25)"},
-                    {"range": [8, 16], "color": "rgba(245, 158, 11, 0.25)"},
-                    {"range": [16, 30], "color": "rgba(239, 68, 68, 0.35)"},
+                    {"range": [0, 8], "color": "rgba(22, 163, 74, 0.18)"},
+                    {"range": [8, 16], "color": "rgba(217, 119, 6, 0.18)"},
+                    {"range": [16, 30], "color": "rgba(220, 38, 38, 0.22)"},
                 ],
                 "threshold": {"line": {"color": PALETTE["emergency"]["color"], "width": 3}, "value": 15.0},
             },
         ))
-        fig_g3.update_layout(template="plotly_dark", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
+        fig_g3.update_layout(template="plotly_white", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
         st.plotly_chart(fig_g3, use_container_width=True)
 
     with g4:
@@ -986,16 +1013,16 @@ with tab_gauges:
             title={"text": "Vadose Deep Soil Saturation", "font": {"size": 13, "color": PALETTE["text_primary"]}},
             gauge={
                 "axis": {"range": [0, 60], "tickcolor": PALETTE["text_secondary"]},
-                "bar": {"color": PALETTE["accent_primary"]},
+                "bar": {"color": "#0F172A"},
                 "steps": [
-                    {"range": [0, 25], "color": "rgba(16, 185, 129, 0.25)"},
-                    {"range": [25, 40], "color": "rgba(245, 158, 11, 0.25)"},
-                    {"range": [40, 60], "color": "rgba(239, 68, 68, 0.35)"},
+                    {"range": [0, 25], "color": "rgba(22, 163, 74, 0.18)"},
+                    {"range": [25, 40], "color": "rgba(217, 119, 6, 0.18)"},
+                    {"range": [40, 60], "color": "rgba(220, 38, 38, 0.22)"},
                 ],
                 "threshold": {"line": {"color": PALETTE["emergency"]["color"], "width": 3}, "value": 42.0},
             },
         ))
-        fig_g4.update_layout(template="plotly_dark", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
+        fig_g4.update_layout(template="plotly_white", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
         st.plotly_chart(fig_g4, use_container_width=True)
 
 # ----------------- Tab 4: Corridor Station Data -----------------
@@ -1029,16 +1056,16 @@ with tab_method:
         st.markdown(
             f"""
             <div class="command-card" style="font-size: 0.88rem; line-height: 1.6;">
-                <b style="color: {PALETTE['accent_primary']};">🔬 58 Hydrological Features Pipeline:</b>
-                <ul style="margin-top: 6px; padding-left: 18px;">
+                <b style="color: {PALETTE['text_primary']};">🔬 58 Hydrological Features Pipeline:</b>
+                <ul style="margin-top: 6px; padding-left: 18px; color: {PALETTE['text_secondary']};">
                     <li><b>Cascading Hydrodynamics:</b> Station flow gradients, velocity ratios, and upstream sums.</li>
                     <li><b>Temporal Acceleration:</b> 1st and 2nd order differencing plus percent surge change.</li>
                     <li><b>Vadose Runoff Physics:</b> Coupled non-linear infiltration $R = P_{{basin}} \\times (\\text{{Soil}}_{{deep}})^2$.</li>
                     <li><b>Glacial Melt Thermodynamics:</b> Lapse-rate corrected 4,500m positive degree-days.</li>
-                    <li><b>Seasonality:</b> Dual-harmonic Fourier intra-annual annual curves.</li>
+                    <li><b>Seasonality:</b> Dual-harmonic Fourier intra-annual curves.</li>
                 </ul>
-                <b style="color: {PALETTE['accent_primary']};">⚠️ Known Model Uncertainty & Limitations:</b>
-                <ul style="margin-top: 6px; padding-left: 18px;">
+                <b style="color: {PALETTE['emergency']['color']};">⚠️ Known Model Uncertainty & Limitations:</b>
+                <ul style="margin-top: 6px; padding-left: 18px; color: {PALETTE['text_secondary']};">
                     <li>Ensemble trained on 42,540 station-days. High uncertainty during unmodeled landslide dam outbursts (LLDOF) or sudden glacial moraine wall collapse.</li>
                     <li>Confidence bounds represent 80% coverage; extreme outliers beyond training envelope may exceed intervals.</li>
                 </ul>
@@ -1051,22 +1078,22 @@ with tab_method:
         st.markdown(
             f"""
             <div class="command-card" style="font-size: 0.88rem; line-height: 1.6;">
-                <b style="color: {PALETTE['warning']['color']};">📞 Official Disaster Response Contacts (Dolakha):</b>
+                <b style="color: {PALETTE['emergency']['color']};">📞 Official Disaster Response Contacts (Dolakha):</b>
                 <div style="margin-top: 8px;">
                     <div><b>Dolakha District Emergency Ops (DEOC):</b></div>
-                    <code style="color:{PALETTE['text_primary']};">[PLACEHOLDER: Charikot DEOC VHF Ch 4 / +977-49-421111]</code>
+                    <code style="color:{PALETTE['text_primary']}; background:#F1F5F9; padding:2px 6px; border-radius:4px;">[PLACEHOLDER: Charikot DEOC VHF Ch 4 / +977-49-421111]</code>
                 </div>
                 <div style="margin-top: 8px;">
                     <div><b>Armed Police Force Disaster Unit (Singati):</b></div>
-                    <code style="color:{PALETTE['text_primary']};">[PLACEHOLDER: APF Disaster Base / +977-49-421999]</code>
+                    <code style="color:{PALETTE['text_primary']}; background:#F1F5F9; padding:2px 6px; border-radius:4px;">[PLACEHOLDER: APF Disaster Base / +977-49-421999]</code>
                 </div>
                 <div style="margin-top: 8px;">
                     <div><b>Upper Tamakoshi Hydropower Control:</b></div>
-                    <code style="color:{PALETTE['text_primary']};">[PLACEHOLDER: Gongar Dam Control Room / +977-49-420000]</code>
+                    <code style="color:{PALETTE['text_primary']}; background:#F1F5F9; padding:2px 6px; border-radius:4px;">[PLACEHOLDER: Gongar Dam Control Room / +977-49-420000]</code>
                 </div>
                 <div style="margin-top: 8px;">
                     <div><b>National Flood Forecasting Toll-Free:</b></div>
-                    <code style="color:{PALETTE['text_primary']};">[PLACEHOLDER: DHM Emergency Desk / Toll-Free 1155]</code>
+                    <code style="color:{PALETTE['text_primary']}; background:#F1F5F9; padding:2px 6px; border-radius:4px;">[PLACEHOLDER: DHM Emergency Desk / Toll-Free 1155]</code>
                 </div>
             </div>
             """,
