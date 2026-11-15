@@ -42,7 +42,6 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from services.tamakoshi_api import (
-    TAMAKOSHI_STATIONS,
     load_model_bundle,
     route_live_basin_telemetry,
     compute_forecast_from_inputs,
@@ -81,9 +80,8 @@ st.markdown(theme_css(PALETTE), unsafe_allow_html=True)
 # -----------------------------------------------------------------------------
 try:
     bundle = load_model_bundle()
-    DANGER_THRESHOLD = float(bundle["threshold"])          # 6.69 m³/s
-    YELLOW_THRESHOLD = DANGER_THRESHOLD * 0.90             # 6.02 m³/s
-    model_loaded = True
+    DANGER_THRESHOLD = float(bundle["threshold"])
+    YELLOW_THRESHOLD = DANGER_THRESHOLD * 0.90
 except Exception as e:
     st.error(f"Critical Model Asset Error: Unable to load 'tamakoshi_ultimate_model.joblib'. Details: {e}")
     st.stop()
@@ -133,7 +131,7 @@ SCENARIOS = {
 # 5. Sidebar: FILTERS & PARAMETERS ONLY
 # -----------------------------------------------------------------------------
 # Operational Mode Filter
-st.sidebar.markdown("<div class='kpi-label'>Telemetry Operating Mode</div>", unsafe_allow_html=True)
+st.sidebar.markdown("<div class='kpi-label'>Telemetry operating mode</div>", unsafe_allow_html=True)
 op_mode = st.sidebar.radio(
     "Select Operating Mode:",
     ["Operational Live Telemetry", "Simulation & Stress Testing"],
@@ -145,7 +143,7 @@ op_mode = st.sidebar.radio(
 if op_mode == "Operational Live Telemetry":
     # Live Mode Filters
     st.sidebar.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-    st.sidebar.markdown("<div class='kpi-label'>Telemetry Lookback Window</div>", unsafe_allow_html=True)
+    st.sidebar.markdown("<div class='kpi-label'>Telemetry lookback window</div>", unsafe_allow_html=True)
     past_days_filter = st.sidebar.slider(
         "Lookback Days",
         min_value=3,
@@ -155,21 +153,24 @@ if op_mode == "Operational Live Telemetry":
         key="filter_lookback_days",
     )
 
-    refresh_clicked = st.sidebar.button("Refresh Telemetry Stream", use_container_width=True, key="btn_refresh_live")
+    refresh_clicked = st.sidebar.button("Refresh telemetry", use_container_width=True, key="btn_refresh_live")
     if refresh_clicked:
         st.cache_data.clear()
-        st.sidebar.success("Telemetry cache refreshed.")
+        st.sidebar.caption("Refresh requested. Loading the latest available telemetry.")
 
     # Fetch live telemetry
     with st.spinner("Connecting to Open-Meteo GloFAS & Basin Weather APIs..."):
         try:
             live_payload = route_live_basin_telemetry(past_days=past_days_filter)
         except Exception as e:
-            st.sidebar.warning(f"Telemetry API error, using verified baseline: {e}")
-            live_payload = route_live_basin_telemetry(past_days=7)
+            st.error(f"Telemetry data unavailable: {e}")
+            st.stop()
 
     active_inputs = live_payload["inputs"]
-    data_source_label = live_payload["status_label"]
+    if live_payload["source_mode"] == "FALLBACK_SNAPSHOT":
+        data_source_label = "Live feed unavailable · showing baseline snapshot"
+    else:
+        data_source_label = live_payload["status_label"]
     data_synced_at = live_payload["synced_at"]
     live_history_df = live_payload["history_df"]
     is_live_active = True
@@ -177,7 +178,7 @@ if op_mode == "Operational Live Telemetry":
 else:
     # Simulation Mode Filters
     st.sidebar.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-    st.sidebar.markdown("<div class='kpi-label'>Calibrated Watershed Scenario</div>", unsafe_allow_html=True)
+    st.sidebar.markdown("<div class='kpi-label'>Calibrated watershed scenario</div>", unsafe_allow_html=True)
     scenario_choice = st.sidebar.selectbox(
         "Select Scenario Preset:",
         list(SCENARIOS.keys()),
@@ -201,7 +202,7 @@ else:
         sim_rain_glacier = st.number_input("Glacier Rain Today (mm)", value=float(sim_defaults[6]), step=1.0, key="sim_rain_glacier")
         sim_rain_3d = st.number_input("3-Day Cumulative Rain (mm)", value=float(sim_defaults[7]), step=5.0, key="sim_rain_3d")
         sim_rain_7d = st.number_input("7-Day Cumulative Rain (mm)", value=float(sim_defaults[8]), step=5.0, key="sim_rain_7d")
-        sim_rain_hours = st.slider("Rain Duration Hours (Cloudburst = low)", 1, 24, int(sim_defaults[9]), key="sim_rain_hours")
+        sim_rain_hours = st.slider("Rain duration (hours)", 0, 24, int(sim_defaults[9]), key="sim_rain_hours")
 
     with st.sidebar.expander("Soil Moisture & Thermal Melt Dynamics", expanded=False):
         sim_soil_sat = st.slider("Deep Soil Saturation (%)", 10, 50, int(sim_defaults[10]), key="sim_soil_sat")
@@ -251,10 +252,10 @@ top_c1, top_c2, top_c3 = st.columns([7, 3, 2], vertical_alignment="center")
 with top_c1:
     st.markdown(
         f"""
-        <div style="margin-bottom: 6px; color: {PALETTE['text_primary']}; font-size: 28px; font-weight: 700; line-height: 1.2;">
+        <div style="margin-bottom: 6px; color: {PALETTE['text_primary']}; font-size: 30px; font-weight: 700; line-height: 1.2;">
                 Tamakoshi River Flood Early Warning Command Center
         </div>
-        <div style="font-size: 15px; color: {PALETTE['text_secondary']};">
+            <div style="font-size: 15px; color: {PALETTE['text_secondary']};">
             Dolakha Watershed, Nepal · Tsho Rolpa to Singati Gorge
         </div>
         """,
@@ -307,7 +308,7 @@ with kpi_c1:
         f"""
         <div class="command-card">
             <div class="kpi-label">Tomorrow's river flow</div>
-            <div class="kpi-value" style="color: {severity['color']};">
+            <div class="kpi-value">
                 {pred_flow:.2f} <span style="font-size: 13px; font-weight: 500; color: {PALETTE['text_secondary']};">m³/s</span>
             </div>
             <div class="kpi-meta">Change from today's reading: {delta_pred:+.2f} m³/s</div>
@@ -317,7 +318,6 @@ with kpi_c1:
     )
 
 with kpi_c2:
-    ci_half = (high_flow - low_flow) / 2.0
     st.markdown(
         f"""
         <div class="command-card">
@@ -333,12 +333,11 @@ with kpi_c2:
 
 with kpi_c3:
     freeboard = DANGER_THRESHOLD - pred_flow
-    freeboard_label = "Freeboard Clearance" if freeboard >= 0 else "Overtopping Depth"
     st.markdown(
         f"""
         <div class="command-card">
             <div class="kpi-label">Margin to model threshold</div>
-            <div class="kpi-value" style="color: {severity['color']};">
+            <div class="kpi-value">
                 {freeboard:+.2f} <span style="font-size: 13px; font-weight: 500; color: {PALETTE['text_secondary']};">m³/s</span>
             </div>
             <div class="kpi-meta">Threshold not yet independently validated</div>
@@ -352,7 +351,7 @@ with kpi_c4:
         f"""
         <div class="command-card">
             <div class="kpi-label">Estimated flood probability</div>
-            <div class="kpi-value" style="color: {severity['color']};">
+            <div class="kpi-value">
                 {flood_prob:.1f}<span style="font-size: 13px; font-weight: 500; color: {PALETTE['text_secondary']};">%</span>
             </div>
             <div class="kpi-meta">Model estimate, not an official alert</div>
@@ -421,7 +420,8 @@ with col_hydro:
         line_width=2,
         annotation_text=f"Model threshold (unverified) · {DANGER_THRESHOLD:.2f} m³/s",
         annotation_position="top right",
-        annotation_font=dict(color=PALETTE["emergency"]["color"], size=10),
+        annotation_font=dict(color=PALETTE["text_primary"], size=13),
+        annotation_bgcolor=PALETTE["emergency"]["bg"],
     )
     fig_hydro.add_hline(
         y=YELLOW_THRESHOLD,
@@ -430,7 +430,8 @@ with col_hydro:
         line_width=1.5,
         annotation_text=f"Model watch line (unverified) · {YELLOW_THRESHOLD:.2f} m³/s",
         annotation_position="bottom right",
-        annotation_font=dict(color=PALETTE["watch"]["color"], size=10),
+        annotation_font=dict(color=PALETTE["text_primary"], size=13),
+        annotation_bgcolor=PALETTE["watch"]["bg"],
     )
     fig_hydro.update_layout(
         template="plotly_white",
@@ -470,8 +471,12 @@ with col_map:
     ]
     for station in map_stations_data:
         station["color"] = station["status"]["rgb"] + [230]
+        station["label_color"] = hex_to_rgb(PALETTE["text"])
         station["map_label"] = f"{station['status']['icon']}  {station['label']} · {station['status']['label']}"
-    df_map_stations = pd.DataFrame(map_stations_data)
+    df_map_stations = pd.DataFrame([
+        {key: value for key, value in station.items() if key != "status"}
+        for station in map_stations_data
+    ])
 
     corridor_arcs = pd.DataFrame([
         {"from_lon": 86.4769, "from_lat": 27.8617, "to_lon": 86.2205, "to_lat": 27.8442, "color": map_stations_data[0]["color"]},
@@ -494,10 +499,10 @@ with col_map:
         data=df_map_stations,
         get_position=["lon", "lat"],
         get_text="map_label",
-        get_color="color",
+        get_color="label_color",
         get_size=14,
         get_pixel_offset=[0, -18],
-        get_alignment_baseline="'bottom'",
+        get_alignment_baseline="bottom",
         pickable=True,
     )
 
@@ -521,21 +526,19 @@ st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
 # 11. HIERARCHY STEP 4: Deep-Dive Diagnostic Tabs (No Emojis)
 # -----------------------------------------------------------------------------
 tab_gorge, tab_council, tab_gauges, tab_table, tab_method = st.tabs([
-    "3D River Gorge Model",
+    "3D corridor view",
     "Multi-Model Ensemble",
     "Hydrological Stress Indicators",
     "Corridor Sensor Telemetry",
-    "System Architecture & Contacts",
-])
+    "System design",
+], key="detail-tabs")
 
 # ----------------- Tab 1: 3D River Gorge Model -----------------
 with tab_gorge:
-    st.markdown("<div class='kpi-label'>Interactive 3D Singati River Gorge Digital Model (Three.js WebGL)</div>", unsafe_allow_html=True)
-    st.caption("Inspect dynamic water surface elevation, canyon terrain walls, and safety threshold planes in full 3D.")
+    st.markdown("<div class='kpi-label'>Illustrative 3D Singati river corridor</div>", unsafe_allow_html=True)
+    st.caption("Rotate and zoom the conceptual terrain view. It is not a surveyed hydraulic model.")
 
     water_height_ratio = min(1.8, max(0.1, pred_flow / DANGER_THRESHOLD))
-    freeboard_val = DANGER_THRESHOLD - pred_flow
-    freeboard_text = f"Clearance: +{freeboard_val:.2f} m³/s (Safe)" if freeboard_val >= 0 else f"OVERTOPPING: {freeboard_val:+.2f} m³/s"
 
     three_js_html = f"""
     <!DOCTYPE html>
@@ -543,19 +546,19 @@ with tab_gorge:
     <head>
         <meta charset="UTF-8">
         <style>
-            body {{ margin: 0; overflow: hidden; background: #F8FAFC; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }}
+            body {{ margin: 0; overflow: hidden; background: {PALETTE['bg_main']}; font-family: Inter, sans-serif; }}
             #hud {{
                 position: absolute; top: 12px; left: 14px;
-                background: rgba(255, 255, 255, 0.95); border: 1px solid #CBD5E1;
-                border-radius: 8px; padding: 10px 14px; color: #0F172A; font-size: 0.80rem;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.08); pointer-events: none;
+                background: {PALETTE['surface']}; border: 1px solid {PALETTE['border']};
+                border-radius: 12px; padding: 12px 16px; color: {PALETTE['text']}; font-size: 15px;
+                box-shadow: 0 4px 12px {PALETTE['shadow']}; pointer-events: none;
             }}
             #hud b {{ color: {severity['color']}; }}
             #hint {{
                 position: absolute; bottom: 10px; right: 14px;
-                background: rgba(255, 255, 255, 0.90); border: 1px solid #E2E8F0;
-                border-radius: 6px; padding: 6px 10px; color: #475569; font-size: 0.72rem;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.05); pointer-events: none;
+                background: {PALETTE['surface']}; border: 1px solid {PALETTE['border']};
+                border-radius: 8px; padding: 8px 12px; color: {PALETTE['text_secondary']}; font-size: 13px;
+                box-shadow: 0 2px 6px {PALETTE['shadow']}; pointer-events: none;
             }}
         </style>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -563,15 +566,13 @@ with tab_gorge:
     </head>
     <body>
         <div id="hud">
-            <div style="font-weight:700; color:{PALETTE['text_primary']}; margin-bottom:4px;">Singati Canyon Hydraulic Stage</div>
-            <div>Forecast: <b>{pred_flow:.2f} m³/s</b> ({severity['tier']})</div>
-            <div>{freeboard_text}</div>
-            <div style="color:#64748B; font-size:0.72rem; margin-top:2px;">Danger Line: {DANGER_THRESHOLD:.2f} m³/s • Buffer: {YELLOW_THRESHOLD:.2f} m³/s</div>
+            <div style="font-weight:700; color:{PALETTE['text_primary']}; margin-bottom:4px;">Illustrative river corridor model</div>
+            <div style="color:{PALETTE['text_secondary']}; font-size:13px; margin-top:4px;">Conceptual terrain only; not a surveyed flood model.</div>
         </div>
         <div id="hint">Interaction: Left Click to Rotate | Right Click to Pan | Scroll to Zoom</div>
         <script>
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xF8FAFC);
+            scene.background = new THREE.Color('{PALETTE["bg_main"]}');
             const camera = new THREE.PerspectiveCamera(45, window.innerWidth / 480, 0.1, 1000);
             camera.position.set(24, 18, 32);
 
@@ -585,11 +586,11 @@ with tab_gorge:
             controls.target.set(0, 1.5, 0);
 
             // Lighting (Bright Neutral Daylight)
-            scene.add(new THREE.AmbientLight(0xE2E8F0, 0.85));
-            const sun = new THREE.DirectionalLight(0xFFFFFF, 1.2);
+            scene.add(new THREE.AmbientLight('{PALETTE["border"]}', 0.85));
+            const sun = new THREE.DirectionalLight('{PALETTE["surface"]}', 1.2);
             sun.position.set(25, 35, 20);
             scene.add(sun);
-            const alertLight = new THREE.PointLight('{severity["color"]}', 1.5, 40);
+            const alertLight = new THREE.PointLight('{PALETTE["accent"]}', 1.5, 40);
             alertLight.position.set(0, 8, 0);
             scene.add(alertLight);
 
@@ -604,23 +605,23 @@ with tab_gorge:
                 pos.setY(i, y);
             }}
             canyonGeo.computeVertexNormals();
-            const canyonMat = new THREE.MeshStandardMaterial({{ color: 0x94A3B8, roughness: 0.85, flatShading: true }});
+            const canyonMat = new THREE.MeshStandardMaterial({{ color: '{PALETTE["muted"]}', roughness: 0.85, flatShading: true }});
             scene.add(new THREE.Mesh(canyonGeo, canyonMat));
 
-            // Dynamic Water Mesh (Green for normal, Red for danger)
+            // Dynamic water surface uses the neutral UI accent; severity remains in the status label.
             const waterGeo = new THREE.PlaneGeometry(13, 56, 30, 30);
             waterGeo.rotateX(-Math.PI / 2);
             const waterMat = new THREE.MeshStandardMaterial({{
-                color: '{severity["color"]}', roughness: 0.2, metalness: 0.6, transparent: true, opacity: 0.88
+                color: '{PALETTE["accent"]}', roughness: 0.2, metalness: 0.6, transparent: true, opacity: 0.88
             }});
             const water = new THREE.Mesh(waterGeo, waterMat);
             water.position.y = -0.9 + {water_height_ratio} * 2.8;
             scene.add(water);
 
-            // Danger Threshold Wireframe (Red)
+            // Model threshold wireframe; the value is unverified.
             const dangerGeo = new THREE.PlaneGeometry(16, 56);
             dangerGeo.rotateX(-Math.PI / 2);
-            const dangerPlane = new THREE.Mesh(dangerGeo, new THREE.MeshBasicMaterial({{ color: 0xDC2626, wireframe: true, transparent: true, opacity: 0.45 }}));
+            const dangerPlane = new THREE.Mesh(dangerGeo, new THREE.MeshBasicMaterial({{ color: '{PALETTE["emergency"]["color"]}', wireframe: true, transparent: true, opacity: 0.45 }}));
             dangerPlane.position.y = 1.9;
             scene.add(dangerPlane);
 
@@ -655,7 +656,7 @@ with tab_council:
 
     m_names = list(council_data.keys())
     m_flows = [council_data[m] for m in m_names]
-    m_colors = ["#1E293B" if m != "RidgeCV Meta-Learner" else severity["color"] for m in m_names]
+    m_colors = [PALETTE["text_secondary"] if m != "RidgeCV Meta-Learner" else severity["color"] for m in m_names]
 
     fig_council = go.Figure(
         go.Bar(
@@ -665,6 +666,7 @@ with tab_council:
             marker_color=m_colors,
             text=[f"{v:.3f} m³/s" for v in m_flows],
             textposition="auto",
+            textfont=dict(color=PALETTE["text_primary"], size=13),
         )
     )
     fig_council.add_vline(x=DANGER_THRESHOLD, line_dash="dot", line_color=PALETTE["emergency"]["color"], line_width=2)
@@ -673,12 +675,13 @@ with tab_council:
         template="plotly_white",
         paper_bgcolor=PALETTE["bg_surface"],
         plot_bgcolor=PALETTE["bg_surface"],
+        font=dict(family="Inter, Arial, sans-serif", color=PALETTE["text_primary"], size=13),
         xaxis=dict(title="Estimated Discharge Tomorrow (m³/s)", gridcolor=PALETTE["border_subtle"]),
         yaxis=dict(autorange="reversed"),
         margin=dict(l=20, r=20, t=20, b=24),
         height=340,
     )
-    st.plotly_chart(fig_council, use_container_width=True)
+    st.plotly_chart(fig_council, use_container_width=True, config={"responsive": True, "displaylogo": False})
 
     base_only_flows = [council_data[m] for m in m_names if m != "RidgeCV Meta-Learner"]
     sc1, sc2, sc3 = st.columns(3)
@@ -700,153 +703,89 @@ with tab_gauges:
 
     with g1:
         fig_g1 = go.Figure(go.Indicator(
-            mode="gauge+number", value=rain_intensity, number={"suffix": " mm/h"},
+            mode="gauge+number", value=rain_intensity, number={"suffix": " mm/h", "font": {"color": PALETTE["text_primary"]}},
             title={"text": "Cloudburst Rain Intensity", "font": {"size": 13, "color": PALETTE["text_primary"]}},
             gauge={
                 "axis": {"range": [0, 40], "tickcolor": PALETTE["text_secondary"]},
-                "bar": {"color": "#0F172A"},
-                "steps": [
-                    {"range": [0, 10], "color": "rgba(22, 163, 74, 0.18)"},
-                    {"range": [10, 20], "color": "rgba(217, 119, 6, 0.18)"},
-                    {"range": [20, 40], "color": "rgba(220, 38, 38, 0.22)"},
-                ],
-                "threshold": {"line": {"color": PALETTE["emergency"]["color"], "width": 3}, "value": 18.0},
+                "bar": {"color": PALETTE["accent"]},
             },
         ))
-        fig_g1.update_layout(template="plotly_white", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
-        st.plotly_chart(fig_g1, use_container_width=True)
+        fig_g1.update_layout(template="plotly_white", paper_bgcolor=PALETTE["bg_surface"], font=dict(family="Inter, Arial, sans-serif", color=PALETTE["text_primary"], size=13), height=200, margin=dict(l=14, r=14, t=28, b=8))
+        st.plotly_chart(fig_g1, use_container_width=True, config={"responsive": True, "displaylogo": False})
 
     with g2:
         fig_g2 = go.Figure(go.Indicator(
-            mode="gauge+number", value=active_inputs["rain_7d"], number={"suffix": " mm"},
+            mode="gauge+number", value=active_inputs["rain_7d"], number={"suffix": " mm", "font": {"color": PALETTE["text_primary"]}},
             title={"text": "Antecedent 7-Day Rain", "font": {"size": 13, "color": PALETTE["text_primary"]}},
             gauge={
                 "axis": {"range": [0, 300], "tickcolor": PALETTE["text_secondary"]},
-                "bar": {"color": "#0F172A"},
-                "steps": [
-                    {"range": [0, 80], "color": "rgba(22, 163, 74, 0.18)"},
-                    {"range": [80, 150], "color": "rgba(217, 119, 6, 0.18)"},
-                    {"range": [150, 300], "color": "rgba(220, 38, 38, 0.22)"},
-                ],
-                "threshold": {"line": {"color": PALETTE["emergency"]["color"], "width": 3}, "value": 140.0},
+                "bar": {"color": PALETTE["accent"]},
             },
         ))
-        fig_g2.update_layout(template="plotly_white", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
-        st.plotly_chart(fig_g2, use_container_width=True)
+        fig_g2.update_layout(template="plotly_white", paper_bgcolor=PALETTE["bg_surface"], font=dict(family="Inter, Arial, sans-serif", color=PALETTE["text_primary"], size=13), height=200, margin=dict(l=14, r=14, t=28, b=8))
+        st.plotly_chart(fig_g2, use_container_width=True, config={"responsive": True, "displaylogo": False})
 
     with g3:
         fig_g3 = go.Figure(go.Indicator(
-            mode="gauge+number", value=glacier_temp, number={"suffix": " °C"},
+            mode="gauge+number", value=glacier_temp, number={"suffix": " °C", "font": {"color": PALETTE["text_primary"]}},
             title={"text": "Tsho Rolpa (4,580m) Temp", "font": {"size": 13, "color": PALETTE["text_primary"]}},
             gauge={
                 "axis": {"range": [0, 30], "tickcolor": PALETTE["text_secondary"]},
-                "bar": {"color": "#0F172A"},
-                "steps": [
-                    {"range": [0, 8], "color": "rgba(22, 163, 74, 0.18)"},
-                    {"range": [8, 16], "color": "rgba(217, 119, 6, 0.18)"},
-                    {"range": [16, 30], "color": "rgba(220, 38, 38, 0.22)"},
-                ],
-                "threshold": {"line": {"color": PALETTE["emergency"]["color"], "width": 3}, "value": 15.0},
+                "bar": {"color": PALETTE["accent"]},
             },
         ))
-        fig_g3.update_layout(template="plotly_white", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
-        st.plotly_chart(fig_g3, use_container_width=True)
+        fig_g3.update_layout(template="plotly_white", paper_bgcolor=PALETTE["bg_surface"], font=dict(family="Inter, Arial, sans-serif", color=PALETTE["text_primary"], size=13), height=200, margin=dict(l=14, r=14, t=28, b=8))
+        st.plotly_chart(fig_g3, use_container_width=True, config={"responsive": True, "displaylogo": False})
 
     with g4:
         fig_g4 = go.Figure(go.Indicator(
-            mode="gauge+number", value=active_inputs["soil_sat_pct"], number={"suffix": "%"},
+            mode="gauge+number", value=active_inputs["soil_sat_pct"], number={"suffix": "%", "font": {"color": PALETTE["text_primary"]}},
             title={"text": "Vadose Deep Soil Saturation", "font": {"size": 13, "color": PALETTE["text_primary"]}},
             gauge={
                 "axis": {"range": [0, 60], "tickcolor": PALETTE["text_secondary"]},
-                "bar": {"color": "#0F172A"},
-                "steps": [
-                    {"range": [0, 25], "color": "rgba(22, 163, 74, 0.18)"},
-                    {"range": [25, 40], "color": "rgba(217, 119, 6, 0.18)"},
-                    {"range": [40, 60], "color": "rgba(220, 38, 38, 0.22)"},
-                ],
-                "threshold": {"line": {"color": PALETTE["emergency"]["color"], "width": 3}, "value": 42.0},
+                "bar": {"color": PALETTE["accent"]},
             },
         ))
-        fig_g4.update_layout(template="plotly_white", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
-        st.plotly_chart(fig_g4, use_container_width=True)
+        fig_g4.update_layout(template="plotly_white", paper_bgcolor=PALETTE["bg_surface"], font=dict(family="Inter, Arial, sans-serif", color=PALETTE["text_primary"], size=13), height=200, margin=dict(l=14, r=14, t=28, b=8))
+        st.plotly_chart(fig_g4, use_container_width=True, config={"responsive": True, "displaylogo": False})
 
 # ----------------- Tab 4: Corridor Station Telemetry -----------------
 with tab_table:
-    st.markdown("<div class='kpi-label'>Multi-Station Historical Discharge & Sensor Vectors</div>", unsafe_allow_html=True)
-    st.caption("Active data fed into the 58-feature hydrological inference engine.")
+    st.markdown("<div class='kpi-label'>Recent corridor readings</div>", unsafe_allow_html=True)
 
     st.dataframe(live_history_df, use_container_width=True, hide_index=True)
 
-    st.markdown("<div class='kpi-label' style='margin-top:14px;'>Current Corridor Station Input Snapshot</div>", unsafe_allow_html=True)
-    df_active_snapshot = pd.DataFrame([{
-        "Singati Target (m³/s)": active_inputs["q_mid"],
-        "Singati Yesterday (m³/s)": active_inputs["q_yesterday"],
-        "Tsho Rolpa Glacier (m³/s)": active_inputs["q_glacier"],
-        "Gongar Dam Intake (m³/s)": active_inputs["q_upper"],
-        "Lower Confluence (m³/s)": active_inputs["q_lower"],
-        "Valley Rain (mm)": active_inputs["rain_mid"],
-        "3-Day Rain (mm)": active_inputs["rain_3d"],
-        "7-Day Rain (mm)": active_inputs["rain_7d"],
-        "Soil Saturation (%)": active_inputs["soil_sat_pct"],
-        "Glacier Temp (°C)": glacier_temp,
-    }])
-    st.dataframe(df_active_snapshot, use_container_width=True, hide_index=True)
+    st.markdown("<div class='kpi-label' style='margin-top:14px;'>Additional model inputs</div>", unsafe_allow_html=True)
+    st.dataframe(pd.DataFrame([{
+        "3-day rain (mm)": active_inputs["rain_3d"],
+        "7-day rain (mm)": active_inputs["rain_7d"],
+        "Soil saturation (%)": active_inputs["soil_sat_pct"],
+        "Glacier temperature estimate (°C)": glacier_temp,
+    }]), use_container_width=True, hide_index=True)
 
 # ----------------- Tab 5: System Architecture & Contacts -----------------
 with tab_method:
-    st.markdown("<div class='kpi-label'>Life-Safety System Architecture & Model Limitations</div>", unsafe_allow_html=True)
+    st.markdown("<div class='kpi-label'>System design and model limitations</div>", unsafe_allow_html=True)
+    st.info(
+        "Admin note: Model thresholds and forecast outputs have not been independently validated "
+        "by local authorities and are not official warnings. Confirm operational decisions with "
+        "the responsible authorities."
+    )
 
-    meth_col1, meth_col2 = st.columns(2)
-    with meth_col1:
+    with st.expander("Technical model details", expanded=False, key="technical-details"):
         st.markdown(
-            f"""
-            <div class="command-card" style="font-size: 0.88rem; line-height: 1.6;">
-                <div style="font-weight: 700; color: #0F172A; margin-bottom: 8px;">
-                    58-Feature Hydrological Pipeline Architecture
-                </div>
-                <ul style="margin-top: 6px; padding-left: 18px; color: #475569;">
-                    <li><b>Cascading Hydrodynamics:</b> Station flow gradients, velocity ratios, and upstream corridor sums.</li>
-                    <li><b>Temporal Acceleration:</b> 1st and 2nd order differencing plus percentage surge acceleration.</li>
-                    <li><b>Vadose Runoff Physics:</b> Coupled non-linear infiltration $R = P_{{basin}} \\times (\\text{{Soil}}_{{deep}})^2$.</li>
-                    <li><b>Glacial Melt Thermodynamics:</b> Lapse-rate corrected 4,500m positive degree-days.</li>
-                    <li><b>Seasonality Fourier Series:</b> Dual-harmonic intra-annual cyclical curves.</li>
-                </ul>
-                <div style="font-weight: 700; color: {PALETTE['emergency']['color']}; margin-top: 14px; margin-bottom: 6px;">
-                    Known Model Uncertainty & Physical Limitations
-                </div>
-                <ul style="margin-top: 6px; padding-left: 18px; color: #475569;">
-                    <li>Ensemble trained on 42,540 station-days. High uncertainty during unmodeled landslide dam outbursts (LLDOF) or sudden glacial moraine wall collapse.</li>
-                    <li>Confidence bounds represent 80% coverage; extreme outliers beyond historical training envelope may exceed intervals.</li>
-                </ul>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+            """
+            **Hydrological pipeline**
 
-    with meth_col2:
-        st.markdown(
-            f"""
-            <div class="command-card" style="font-size: 0.88rem; line-height: 1.6;">
-                <div style="font-weight: 700; color: #0F172A; margin-bottom: 8px;">
-                    Official Disaster Response Directory (Dolakha District)
-                </div>
-                <div style="margin-top: 10px;">
-                    <div style="font-size: 0.80rem; font-weight: 600; color: #64748B;">Dolakha District Emergency Operations Center (DEOC):</div>
-                    <code style="color:#0F172A; background:#F1F5F9; padding:4px 8px; border-radius:4px; font-weight: 600; display: inline-block; margin-top: 2px;">[PLACEHOLDER: Charikot DEOC VHF Ch 4 / +977-49-421111]</code>
-                </div>
-                <div style="margin-top: 10px;">
-                    <div style="font-size: 0.80rem; font-weight: 600; color: #64748B;">Armed Police Force Disaster Unit (Singati Base):</div>
-                    <code style="color:#0F172A; background:#F1F5F9; padding:4px 8px; border-radius:4px; font-weight: 600; display: inline-block; margin-top: 2px;">[PLACEHOLDER: APF Disaster Base / +977-49-421999]</code>
-                </div>
-                <div style="margin-top: 10px;">
-                    <div style="font-size: 0.80rem; font-weight: 600; color: #64748B;">Upper Tamakoshi Hydropower Control Room:</div>
-                    <code style="color:#0F172A; background:#F1F5F9; padding:4px 8px; border-radius:4px; font-weight: 600; display: inline-block; margin-top: 2px;">[PLACEHOLDER: Gongar Dam Control Room / +977-49-420000]</code>
-                </div>
-                <div style="margin-top: 10px;">
-                    <div style="font-size: 0.80rem; font-weight: 600; color: #64748B;">National Flood Forecasting Toll-Free Emergency Desk:</div>
-                    <code style="color:#0F172A; background:#F1F5F9; padding:4px 8px; border-radius:4px; font-weight: 600; display: inline-block; margin-top: 2px;">[PLACEHOLDER: DHM Emergency Desk / Toll-Free 1155]</code>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+            - Multi-station discharge gradients and upstream flow relationships
+            - Temporal flow changes, rainfall accumulation, and soil moisture
+            - Glacier temperature and melt indicators
+            - Seasonal features and a stacked multi-model forecast
+
+            **Model limits**
+
+            - Prediction intervals reflect the model's training distribution; rare events may fall outside it.
+            - The corridor visualization is illustrative and is not a surveyed hydraulic model.
+            - No emergency contact directory is configured. Add only contacts verified with local authorities.
+            """
         )

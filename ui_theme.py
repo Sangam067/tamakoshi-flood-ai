@@ -21,6 +21,7 @@ LIGHT = {
     "text": "#0F1B2D",
     "muted": "#5B6B84",
     "accent": "#0369A1",
+    "button_text": "#FFFFFF",
     "shadow": "rgba(15, 27, 45, 0.06)",
     "focus": "rgba(3, 105, 161, 0.24)",
 }
@@ -34,6 +35,7 @@ DARK = {
     "text": "#F3F6FB",
     "muted": "#BDCADB",
     "accent": "#7DD3FC",
+    "button_text": "#0C1524",
     "shadow": "rgba(0, 0, 0, 0.24)",
     "focus": "rgba(125, 211, 252, 0.30)",
 }
@@ -175,7 +177,7 @@ def theme_css(tokens: dict) -> str:
     .severity-title {{
         margin: 10px 0 6px;
         color: var(--text);
-        font-size: 18px;
+        font-size: 15px;
         font-weight: 700;
         line-height: 1.4;
     }}
@@ -204,7 +206,7 @@ def theme_css(tokens: dict) -> str:
         border: 1px solid var(--accent) !important;
         border-radius: 8px !important;
         background: var(--accent) !important;
-        color: #FFFFFF !important;
+        color: {tokens["button_text"]} !important;
         font-family: {FONT_STACK} !important;
         font-size: 15px !important;
         font-weight: 600 !important;
@@ -214,7 +216,7 @@ def theme_css(tokens: dict) -> str:
     [data-testid="stBaseButton-secondary"]:hover,
     [data-testid="stBaseButton-primary"]:hover {{
         filter: brightness(0.92);
-        color: #FFFFFF !important;
+        color: {tokens["button_text"]} !important;
     }}
     .stButton > button:active,
     [data-testid="stBaseButton-secondary"]:active,
@@ -266,14 +268,25 @@ def theme_css(tokens: dict) -> str:
     .stTabs [role="tablist"] {{ gap: 8px; border-bottom-color: var(--border); }}
     .stTabs [role="tab"] {{
         min-height: 44px;
+        background: var(--surface);
         color: var(--muted);
         border-radius: 8px 8px 0 0;
         font-family: {FONT_STACK};
         font-size: 15px;
     }}
     .stTabs [role="tab"][aria-selected="true"] {{
+        background: var(--surface);
         color: var(--text);
         border-bottom-color: var(--accent);
+    }}
+    [data-testid="stMetricValue"] {{
+        color: var(--text);
+        font-size: 30px;
+        font-variant-numeric: tabular-nums;
+    }}
+    [data-testid="stMetricLabel"], [data-testid="stMetricDelta"] {{
+        color: var(--muted);
+        font-size: 13px;
     }}
     [data-testid="stDataFrame"] {{
         border: 1px solid var(--border);
