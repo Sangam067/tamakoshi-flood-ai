@@ -1,3 +1,11 @@
+import sys
+
+try:
+    import _loss  # noqa: F401
+except ModuleNotFoundError:
+    import sklearn._loss._loss as _sk_loss
+    sys.modules["_loss"] = _sk_loss
+
 import joblib
 import numpy as np
 import pandas as pd
@@ -5,9 +13,11 @@ import streamlit as st
 
 st.set_page_config(page_title="Tamakoshi Flood Early Warning AI", page_icon="🏔️", layout="wide")
 
+
 @st.cache_resource
 def load_bundle():
     return joblib.load("tamakoshi_ultimate_model.joblib")
+
 
 bundle = load_bundle()
 base_models = bundle["base_models"]
