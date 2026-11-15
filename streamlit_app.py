@@ -3,7 +3,7 @@ Tamakoshi Himalayan Flood AI | Early Warning Command Center
 ============================================================
 Life-Safety Early Warning Dashboard & Hydrological Decision Support System
 Catchment: Tamakoshi River Corridor, Dolakha District, Nepal (4,580m -> 1,250m ASL)
-Theme: Light Theme (Black, White, Red, Green & Life-Safety Accents)
+Theme: Light Command Theme (Black, White, Red, Green & Precision Life-Safety Accents)
 """
 
 import sys
@@ -47,50 +47,51 @@ from services.tamakoshi_api import (
 )
 
 # -----------------------------------------------------------------------------
-# 2. Design System Tokens: Clean Light Theme (Black, White, Red, Green)
+# 2. Design System Tokens: Pure Clean Theme (No Emojis, High Tactile Quality)
 # -----------------------------------------------------------------------------
 PALETTE = {
-    # Surfaces & Canvas (Crisp Light Theme)
-    "bg_main": "#F8FAFC",        # Soft light neutral canvas
-    "bg_surface": "#FFFFFF",     # Crisp pure white card surface
-    "bg_surface_alt": "#F1F5F9", # Elevated container / header / tabs
-    "border_subtle": "#E2E8F0",  # Clean light border divider
-    "border_focus": "#0F172A",   # High-contrast black/slate focus
+    # Surfaces & Canvas
+    "bg_main": "#F8FAFC",        # Soft neutral light canvas
+    "bg_surface": "#FFFFFF",     # Pure white card surface
+    "bg_surface_alt": "#F1F5F9", # Elevated container / header
+    "border_subtle": "#E2E8F0",  # Clean divider line
+    "border_focus": "#0F172A",   # High-contrast black focus
+    "border_card": "#CBD5E1",   # Standard card border
 
-    # Typography (Black / Slate Grays)
-    "text_primary": "#0F172A",   # Slate 900 (Deep near-black, high legibility)
-    "text_secondary": "#475569", # Slate 600 (Informational)
+    # Typography
+    "text_primary": "#0F172A",   # Slate 900 (Deep near-black)
+    "text_secondary": "#475569", # Slate 600 (Labels and descriptions)
     "text_muted": "#64748B",     # Slate 500 (Metadata, timestamps)
 
-    # Primary Functional Accent (Black / Dark Slate)
-    "accent_primary": "#0F172A", # High-contrast primary interactive tone
+    # Primary Functional Accent
+    "accent_primary": "#0F172A", # Solid dark slate interactive tone
     "accent_subtle": "#334155",  # Secondary dark slate
 
-    # Strict Life-Safety Signaling Scale (Strictly Red & Green, with Amber/Orange for intermediate watch/warning)
+    # Strict Life-Safety Signaling Scale (Strictly Red & Green, with Amber/Orange for intermediate)
     "emergency": {
-        "tier": "EMERGENCY",
-        "icon": "🚨",
-        "color": "#DC2626",      # Vivid High-Contrast Red (Danger Line 6.69 m³/s)
+        "tier": "CRITICAL DANGER",
+        "level_num": "4",
+        "color": "#DC2626",      # Vivid High-Contrast Red (6.69 m³/s Danger Line)
         "bg": "rgba(220, 38, 38, 0.08)",
         "border": "#DC2626",
     },
     "warning": {
-        "tier": "WARNING",
-        "icon": "⚠️",
+        "tier": "FLOOD WARNING",
+        "level_num": "3",
         "color": "#EA580C",      # High-Contrast Orange (Pre-Breach Warning)
         "bg": "rgba(234, 88, 12, 0.08)",
         "border": "#EA580C",
     },
     "watch": {
-        "tier": "WATCH",
-        "icon": "🟡",
-        "color": "#D97706",      # High-Contrast Amber (Watch Buffer 6.02 m³/s)
+        "tier": "HYDRO WATCH",
+        "level_num": "2",
+        "color": "#D97706",      # High-Contrast Amber (6.02 m³/s Watch Buffer)
         "bg": "rgba(217, 119, 6, 0.08)",
         "border": "#D97706",
     },
     "normal": {
-        "tier": "NORMAL",
-        "icon": "✅",
+        "tier": "NORMAL BASEFLOW",
+        "level_num": "1",
         "color": "#16A34A",      # Vivid High-Contrast Green (Safe Baseline)
         "bg": "rgba(22, 163, 74, 0.08)",
         "border": "#16A34A",
@@ -98,39 +99,25 @@ PALETTE = {
 }
 
 # -----------------------------------------------------------------------------
-# 3. Streamlit Page Configuration & Global Light CSS
+# 3. Streamlit Page Configuration & Professional CSS
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Tamakoshi Himalayan Flood AI | Early Warning Command Center",
-    page_icon="🏔️",
+    page_title="Tamakoshi River Flood Early Warning Command Center",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 CUSTOM_CSS = f"""
 <style>
-    /* CSS Variables bound strictly to PALETTE */
-    :root {{
-        --bg-main: {PALETTE["bg_main"]};
-        --bg-surface: {PALETTE["bg_surface"]};
-        --bg-surface-alt: {PALETTE["bg_surface_alt"]};
-        --border-subtle: {PALETTE["border_subtle"]};
-        --border-focus: {PALETTE["border_focus"]};
-        --text-primary: {PALETTE["text_primary"]};
-        --text-secondary: {PALETTE["text_secondary"]};
-        --text-muted: {PALETTE["text_muted"]};
-        --accent-primary: {PALETTE["accent_primary"]};
-    }}
-
     /* Global canvas */
     html, body, .stApp {{
-        background: var(--bg-main) !important;
-        color: var(--text-primary) !important;
+        background: {PALETTE["bg_main"]} !important;
+        color: {PALETTE["text_primary"]} !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
     }}
 
     .main .block-container {{
-        padding: 1rem 1.5rem 2rem 1.5rem !important;
+        padding: 1.25rem 1.75rem 2rem 1.75rem !important;
         max-width: 1560px !important;
     }}
 
@@ -142,137 +129,182 @@ CUSTOM_CSS = f"""
     /* Sidebar styled strictly as a filter panel in light theme */
     section[data-testid="stSidebar"] {{
         background: #FFFFFF !important;
-        border-right: 1px solid var(--border-subtle) !important;
+        border-right: 1px solid {PALETTE["border_subtle"]} !important;
     }}
     section[data-testid="stSidebar"] .block-container {{
-        padding: 1.2rem 1rem !important;
+        padding: 1.2rem 1.1rem !important;
     }}
 
-    /* 8px Grid & Consistent Cards */
+    /* 8px Spacing Grid & Precision Cards */
     .command-card {{
-        background: var(--bg-surface);
-        border: 1px solid var(--border-subtle);
-        border-radius: 10px;
-        padding: 16px;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        background: #FFFFFF;
+        border: 1px solid {PALETTE["border_subtle"]};
+        border-radius: 8px;
+        padding: 18px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }}
     .command-card:hover {{
-        border-color: #CBD5E1;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
+        border-color: #94A3B8;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     }}
 
     .kpi-label {{
-        font-size: 0.78rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: var(--text-secondary);
-        margin-bottom: 4px;
+        color: #64748B;
+        margin-bottom: 6px;
     }}
     .kpi-value {{
-        font-size: 1.80rem;
+        font-size: 2.10rem;
         font-weight: 800;
-        line-height: 1.2;
-        color: var(--text-primary);
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+        font-variant-numeric: tabular-nums;
+        color: #0F172A;
     }}
     .kpi-meta {{
         font-size: 0.80rem;
         font-weight: 500;
-        margin-top: 6px;
-        color: var(--text-muted);
-    }}
-
-    /* Action Banner */
-    .severity-banner {{
-        border-radius: 10px;
-        padding: 16px 20px;
-        margin-bottom: 16px;
-        border: 1px solid;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    }}
-    .severity-title {{
-        font-size: 1.15rem;
-        font-weight: 800;
-        letter-spacing: -0.01em;
+        margin-top: 8px;
+        color: #64748B;
         display: flex;
         align-items: center;
+        gap: 6px;
+    }}
+
+    /* Status Dot */
+    .status-dot {{
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }}
+
+    /* Catching Action Banner */
+    .severity-banner {{
+        border-radius: 8px;
+        padding: 18px 22px;
+        margin-bottom: 18px;
+        border: 1px solid {PALETTE["border_subtle"]};
+        border-left: 6px solid;
+        background: #FFFFFF;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+    }}
+    .severity-tag {{
+        display: inline-flex;
+        align-items: center;
         gap: 8px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }}
+    .severity-title {{
+        font-size: 1.18rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
         margin-bottom: 6px;
     }}
     .severity-body {{
         font-size: 0.92rem;
         line-height: 1.55;
-        color: var(--text-primary);
+        color: #334155;
     }}
     .action-list {{
-        margin: 8px 0 0 0;
+        margin: 10px 0 0 0;
         padding-left: 20px;
         font-size: 0.88rem;
         color: #1E293B;
-        line-height: 1.6;
+        line-height: 1.65;
     }}
 
-    /* Tab styling */
+    /* Sleek Clean Tab styling (No Emojis) */
     .stTabs [role="tablist"] {{
-        gap: 8px;
-        border-bottom: 1px solid var(--border-subtle);
-        padding-bottom: 4px;
+        gap: 6px;
+        border-bottom: 2px solid {PALETTE["border_subtle"]};
+        padding-bottom: 0px;
     }}
     .stTabs [role="tab"] {{
-        background: var(--bg-surface);
-        border: 1px solid var(--border-subtle);
-        border-radius: 8px 8px 0 0;
-        color: var(--text-secondary);
-        padding: 10px 16px;
+        background: #F8FAFC;
+        border: 1px solid {PALETTE["border_subtle"]};
+        border-bottom: none;
+        border-radius: 6px 6px 0 0;
+        color: #64748B;
+        padding: 10px 18px;
         font-weight: 600;
-        font-size: 0.88rem;
-        min-height: 44px;
+        font-size: 0.86rem;
+        letter-spacing: 0.01em;
+        min-height: 42px;
         transition: all 0.15s ease;
     }}
     .stTabs [role="tab"]:hover {{
-        color: var(--text-primary);
+        color: #0F172A;
+        background: #FFFFFF;
         border-color: #CBD5E1;
     }}
     .stTabs [role="tab"][aria-selected="true"] {{
-        background: var(--bg-surface-alt);
-        border-color: #CBD5E1;
-        border-top: 3px solid var(--accent-primary) !important;
-        color: var(--text-primary) !important;
-        font-weight: 700;
+        background: #FFFFFF !important;
+        border-color: #CBD5E1 !important;
+        border-bottom: 2px solid #FFFFFF !important;
+        border-top: 3px solid #0F172A !important;
+        color: #0F172A !important;
+        font-weight: 700 !important;
+        margin-bottom: -2px;
     }}
 
-    /* Streamlit controls minimum tap target 44px */
+    /* High-Impact Solid Buttons */
     .stButton > button {{
         min-height: 44px;
         border-radius: 8px;
         font-weight: 600;
-        border: 1px solid #CBD5E1;
-        background: #FFFFFF;
-        color: var(--text-primary);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        transition: all 0.15s ease-in-out;
+        font-size: 0.88rem;
+        letter-spacing: 0.02em;
+        border: 1px solid #0F172A;
+        background: #0F172A;
+        color: #FFFFFF;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12), 0 1px 2px rgba(15, 23, 42, 0.08);
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 100%;
+        cursor: pointer;
     }}
     .stButton > button:hover {{
-        border-color: var(--accent-primary);
-        color: var(--accent-primary);
-        background: var(--bg-surface-alt);
+        background: #1E293B;
+        border-color: #1E293B;
+        color: #FFFFFF;
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+        transform: translateY(-1px);
     }}
+    .stButton > button:active {{
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.10);
+    }}
+
+    /* Inputs, Sliders, Selectbox */
     .stSelectbox > div, .stSlider > div, .stNumberInput > div {{
-        border-radius: 8px;
+        border-radius: 6px;
     }}
 
     /* Header Badges */
-    .badge {{
+    .status-badge {{
         display: inline-flex;
         align-items: center;
         gap: 6px;
         padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.03em;
+        border-radius: 4px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
+        border: 1px solid {PALETTE["border_subtle"]};
+        background: #F8FAFC;
+        color: #334155;
     }}
 </style>
 """
@@ -287,7 +319,7 @@ try:
     YELLOW_THRESHOLD = DANGER_THRESHOLD * 0.90             # 6.02 m³/s
     model_loaded = True
 except Exception as e:
-    st.error(f"⚠️ Critical Model Asset Error: Unable to load 'tamakoshi_ultimate_model.joblib'. Details: {e}")
+    st.error(f"Critical Model Asset Error: Unable to load 'tamakoshi_ultimate_model.joblib'. Details: {e}")
     st.stop()
 
 
@@ -297,84 +329,84 @@ def classify_alert_severity(pred_flow: float, flood_prob: float) -> dict:
         base = PALETTE["emergency"]
         return {
             **base,
-            "headline": f"{base['icon']} EMERGENCY: CRITICAL OVERTOPPING BREACH IMMINENT",
+            "headline": "CRITICAL OVERTOPPING BREACH IMMINENT",
             "summary": (
-                f"Predicted 24-hr discharge reaches <b>{pred_flow:.2f} m³/s</b>, exceeding the "
+                f"Predicted 24-hour discharge reaches <b>{pred_flow:.2f} m³/s</b>, exceeding the "
                 f"95th-percentile safety threshold of <b>{DANGER_THRESHOLD:.2f} m³/s</b> by "
                 f"<b>{(pred_flow - DANGER_THRESHOLD):+.2f} m³/s</b> with <b>{flood_prob:.1f}%</b> inundation likelihood."
             ),
-            "protocol_header": "🚨 Mandated Emergency Life-Safety Actions (Level 4 - RED):",
+            "protocol_header": "MANDATED EMERGENCY ACTIONS (LEVEL 4 - CRITICAL DANGER):",
             "protocols": [
-                "<b>Immediate Siren Alarms:</b> Broadcast VHF/SMS emergency evacuation to Singati Bazaar, Gongar, Jagat, and Lamabagar.",
+                "<b>Immediate Evacuation Sirens:</b> Broadcast VHF/SMS emergency evacuation orders to Singati Bazaar, Gongar, Jagat, and Lamabagar.",
                 "<b>Dam Radial Spillway Gates:</b> Actuate Upper Tamakoshi (456 MW) spillways immediately for reservoir drawdown buffering.",
                 "<b>Tactical Rescue Deployment:</b> Mobilize Armed Police Force (APF) water rescue and Dolakha DDMC emergency teams.",
-                "<b>Emergency Channel Placeholder:</b> [PLACEHOLDER: Dolakha DEOC VHF Ch 4 / Hotline: +977-49-421111]",
+                "<b>Emergency Communications Desk:</b> [PLACEHOLDER: Dolakha DEOC VHF Ch 4 / Hotline: +977-49-421111]",
             ],
         }
     elif pred_flow >= (DANGER_THRESHOLD - 0.35) or flood_prob >= 50.0:
         base = PALETTE["warning"]
         return {
             **base,
-            "headline": f"{base['icon']} WARNING: SEVERE SURGE ACCELERATION — PRE-BREACH WATCH",
+            "headline": "SEVERE SURGE ACCELERATION — PRE-BREACH WARNING",
             "summary": (
                 f"Predicted discharge reaches <b>{pred_flow:.2f} m³/s</b> with rapid acceleration. "
                 f"Channel clearance is only <b>{(DANGER_THRESHOLD - pred_flow):.2f} m³/s</b> with <b>{flood_prob:.1f}%</b> breach probability."
             ),
-            "protocol_header": "⚠️ High-Alert Standby Actions (Level 3 - WARNING):",
+            "protocol_header": "HIGH-ALERT STANDBY ACTIONS (LEVEL 3 - WARNING):",
             "protocols": [
                 "<b>Pre-Warning Sirens:</b> Sound advisory sirens in low-lying riverside settlement zones along Singati corridor.",
                 "<b>Continuous Telemetry Polling:</b> Switch upstream radar gauges at Tsho Rolpa (4,580m) to high-frequency 10-minute cycles.",
                 "<b>Grid Coordination:</b> Coordinate with Nepal Electricity Authority (NEA) Load Dispatch for contingency load-shedding.",
-                "<b>Emergency Channel Placeholder:</b> [PLACEHOLDER: APF Disaster Response Base Singati / Hotline: +977-49-421999]",
+                "<b>Emergency Communications Desk:</b> [PLACEHOLDER: APF Disaster Response Base Singati / Hotline: +977-49-421999]",
             ],
         }
     elif pred_flow >= YELLOW_THRESHOLD or flood_prob >= 35.0:
         base = PALETTE["watch"]
         return {
             **base,
-            "headline": f"{base['icon']} WATCH: MONSOON SURGE IN UPPER CATCHMENT — BUFFER WATCH",
+            "headline": "MONSOON SURGE IN UPPER CATCHMENT — BUFFER WATCH",
             "summary": (
                 f"Predicted discharge reaches <b>{pred_flow:.2f} m³/s</b>, entering the 10% safety buffer zone "
                 f"(<b>{YELLOW_THRESHOLD:.2f} – {DANGER_THRESHOLD:.2f} m³/s</b>). AI inundation likelihood: <b>{flood_prob:.1f}%</b>."
             ),
-            "protocol_header": "🟡 Active Hydrological Watch Actions (Level 2 - WATCH):",
+            "protocol_header": "ACTIVE HYDROLOGICAL WATCH ACTIONS (LEVEL 2 - WATCH):",
             "protocols": [
-                "<b>Floodplain Clearance:</b> Order riverbank sand/gravel excavation crews to immediately evacuate the gorge floodplain.",
+                "<b>Floodplain Clearance:</b> Order riverbank sand and gravel excavation crews to immediately evacuate the gorge floodplain.",
                 "<b>Glacial Siphon Surveillance:</b> Monitor Tsho Rolpa moraine lake siphon discharge and positive temperature anomalies.",
                 "<b>DDMC Advisory:</b> Notify Dolakha disaster coordinators and transport police along Singati-Charikot highway.",
-                "<b>Emergency Channel Placeholder:</b> [PLACEHOLDER: Upper Tamakoshi Hydropower Control Room / Hotline: +977-49-420000]",
+                "<b>Emergency Communications Desk:</b> [PLACEHOLDER: Upper Tamakoshi Hydropower Control Room / Hotline: +977-49-420000]",
             ],
         }
     else:
         base = PALETTE["normal"]
         return {
             **base,
-            "headline": f"{base['icon']} NORMAL: SAFE HYDROLOGICAL EQUILIBRIUM",
+            "headline": "SAFE HYDROLOGICAL EQUILIBRIUM",
             "summary": (
                 f"Discharge is safely contained within natural gorge banks at <b>{pred_flow:.2f} m³/s</b> "
                 f"(Clearance to Danger Line: <b>{(DANGER_THRESHOLD - pred_flow):.2f} m³/s</b>). Flood probability: <b>{flood_prob:.1f}%</b>."
             ),
-            "protocol_header": "✅ Standard Sentinel Surveillance (Level 1 - GREEN):",
+            "protocol_header": "STANDARD SENTINEL SURVEILLANCE (LEVEL 1 - NORMAL):",
             "protocols": [
                 "<b>Nominal Hydro Dispatch:</b> Maintain scheduled 456 MW generation dispatch at Upper Tamakoshi Plant.",
                 "<b>Automated Monitoring:</b> Autonomous GloFAS satellite precipitation and acoustic telemetry polling every 30 minutes.",
-                "<b>Inquiry Placeholder:</b> [PLACEHOLDER: DHM Flood Forecasting Information Desk / Toll-Free: 1155]",
+                "<b>Information Desk:</b> [PLACEHOLDER: DHM Flood Forecasting Information Desk / Toll-Free: 1155]",
             ],
         }
 
 
 # Calibrated Historical Scenarios for Stress Testing
 SCENARIOS = {
-    "🔴 Scenario 3: Cloudburst + Glacial Melt (Red Alert)": (
+    "Scenario 3: Cloudburst and Glacial Siphon Breach (Emergency Alert)": (
         6.60, 5.55, 1.15, 4.35, 9.80, 58.0, 42.0, 135.0, 230.0, 3, 48, 24.0, 15.5, 0.0, 22.5, 8
     ),
-    "🟡 Scenario 2: Rising Monsoon Surge (Yellow Watch)": (
+    "Scenario 2: Active Monsoon Surge (Yellow Watch)": (
         5.85, 5.20, 0.85, 3.70, 8.40, 28.0, 20.0, 68.0, 135.0, 7, 41, 22.0, 14.0, 0.0, 19.5, 7
     ),
-    "🟢 Scenario 1: Dry Winter Baseflow (Normal)": (
+    "Scenario 1: Dry Winter Baseflow (Normal Baseline)": (
         0.35, 0.36, 0.05, 0.22, 0.55, 0.0, 0.0, 0.5, 2.0, 0, 22, 14.0, 2.5, 0.0, 14.5, 2
     ),
-    "⚙️ Custom Simulation (Manual Sliders)": None,
+    "Custom Simulation (Manual Calibration)": None,
 }
 
 # -----------------------------------------------------------------------------
@@ -382,14 +414,14 @@ SCENARIOS = {
 # -----------------------------------------------------------------------------
 st.sidebar.markdown(
     f"""
-    <div style="padding: 10px 4px 16px 4px; border-bottom: 1px solid {PALETTE['border_subtle']}; margin-bottom: 14px;">
-        <div style="font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; color: {PALETTE['text_secondary']}; text-transform: uppercase;">
+    <div style="padding: 6px 2px 14px 2px; border-bottom: 1px solid {PALETTE['border_subtle']}; margin-bottom: 14px;">
+        <div style="font-size: 0.70rem; font-weight: 700; letter-spacing: 0.08em; color: #64748B; text-transform: uppercase;">
             Early Warning Command Center
         </div>
-        <div style="font-size: 1.30rem; font-weight: 800; color: {PALETTE['text_primary']}; margin-top: 2px;">
-            🏔️ Tamakoshi Flood AI
+        <div style="font-size: 1.25rem; font-weight: 800; color: #0F172A; margin-top: 2px; letter-spacing: -0.01em;">
+            Tamakoshi Flood AI
         </div>
-        <div style="font-size: 0.80rem; color: {PALETTE['text_muted']}; margin-top: 2px;">
+        <div style="font-size: 0.78rem; color: #64748B; margin-top: 2px;">
             Dolakha Watershed, Nepal
         </div>
     </div>
@@ -398,16 +430,16 @@ st.sidebar.markdown(
 )
 
 # Operational Mode Filter
-st.sidebar.markdown("<div class='kpi-label'>Operating Telemetry Mode</div>", unsafe_allow_html=True)
+st.sidebar.markdown("<div class='kpi-label'>Telemetry Operating Mode</div>", unsafe_allow_html=True)
 op_mode = st.sidebar.radio(
     "Select Operating Mode:",
-    ["📡 Operational Live Telemetry", "🎛️ Simulation / Stress Testing"],
+    ["Operational Live Telemetry", "Simulation & Stress Testing"],
     index=0,
     label_visibility="collapsed",
     key="filter_op_mode",
 )
 
-if "📡" in op_mode:
+if op_mode == "Operational Live Telemetry":
     # Live Mode Filters
     st.sidebar.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
     st.sidebar.markdown("<div class='kpi-label'>Telemetry Lookback Window</div>", unsafe_allow_html=True)
@@ -420,7 +452,7 @@ if "📡" in op_mode:
         key="filter_lookback_days",
     )
 
-    refresh_clicked = st.sidebar.button("🔄 Refresh Live Telemetry", use_container_width=True, key="btn_refresh_live")
+    refresh_clicked = st.sidebar.button("Refresh Telemetry Stream", use_container_width=True, key="btn_refresh_live")
     if refresh_clicked:
         st.cache_data.clear()
         st.sidebar.success("Telemetry cache refreshed.")
@@ -454,21 +486,21 @@ else:
         6.60, 5.55, 1.15, 4.35, 9.80, 58.0, 42.0, 135.0, 230.0, 3, 48, 24.0, 15.5, 0.0, 22.5, 8
     )
 
-    with st.sidebar.expander("🌊 Station Discharge Sensors (m³/s)", expanded=True):
+    with st.sidebar.expander("Station Discharge Sensors (m³/s)", expanded=True):
         sim_q_mid = st.number_input("Singati Target Flow (m³/s)", value=float(sim_defaults[0]), step=0.1, key="sim_q_mid")
         sim_q_yesterday = st.number_input("Singati Flow Yesterday (m³/s)", value=float(sim_defaults[1]), step=0.1, key="sim_q_yesterday")
         sim_q_glacier = st.number_input("Tsho Rolpa Glacier Outflow (m³/s)", value=float(sim_defaults[2]), step=0.05, key="sim_q_glacier")
         sim_q_upper = st.number_input("Gongar Dam Intake Flow (m³/s)", value=float(sim_defaults[3]), step=0.1, key="sim_q_upper")
         sim_q_lower = st.number_input("Lower Confluence Flow (m³/s)", value=float(sim_defaults[4]), step=0.1, key="sim_q_lower")
 
-    with st.sidebar.expander("🌧️ Monsoon Cloudburst & Rain Dynamics", expanded=False):
+    with st.sidebar.expander("Precipitation & Cloudburst Dynamics", expanded=False):
         sim_rain_mid = st.number_input("Valley Rain Today (mm)", value=float(sim_defaults[5]), step=1.0, key="sim_rain_mid")
         sim_rain_glacier = st.number_input("Glacier Rain Today (mm)", value=float(sim_defaults[6]), step=1.0, key="sim_rain_glacier")
         sim_rain_3d = st.number_input("3-Day Cumulative Rain (mm)", value=float(sim_defaults[7]), step=5.0, key="sim_rain_3d")
         sim_rain_7d = st.number_input("7-Day Cumulative Rain (mm)", value=float(sim_defaults[8]), step=5.0, key="sim_rain_7d")
         sim_rain_hours = st.slider("Rain Duration Hours (Cloudburst = low)", 1, 24, int(sim_defaults[9]), key="sim_rain_hours")
 
-    with st.sidebar.expander("🏔️ Vadose Soil & Glacial Thermodynamics", expanded=False):
+    with st.sidebar.expander("Soil Moisture & Thermal Melt Dynamics", expanded=False):
         sim_soil_sat = st.slider("Deep Soil Saturation (%)", 10, 50, int(sim_defaults[10]), key="sim_soil_sat")
         sim_tmax = st.number_input("Valley Max Temp (°C)", value=float(sim_defaults[11]), step=0.5, key="sim_tmax")
         sim_tmin = st.number_input("Valley Min Temp (°C)", value=float(sim_defaults[12]), step=0.5, key="sim_tmin")
@@ -517,12 +549,12 @@ with top_c1:
     st.markdown(
         f"""
         <div style="margin-bottom: 4px;">
-            <span style="font-size: 1.45rem; font-weight: 800; color: {PALETTE['text_primary']};">
-                🏔️ Tamakoshi River Flood Early Warning Command Center
+            <span style="font-size: 1.45rem; font-weight: 800; color: #0F172A; letter-spacing: -0.01em;">
+                Tamakoshi River Flood Early Warning Command Center
             </span>
         </div>
-        <div style="font-size: 0.82rem; color: {PALETTE['text_secondary']};">
-            Dolakha Watershed • Tsho Rolpa Glacier (4,580m) to Singati Gorge (1,250m) • Early Warning Telemetry
+        <div style="font-size: 0.82rem; color: #64748B;">
+            Dolakha Watershed • Tsho Rolpa Glacier (4,580m) to Singati Gorge (1,250m) • Hydrological Decision Support
         </div>
         """,
         unsafe_allow_html=True,
@@ -530,9 +562,9 @@ with top_c1:
 with top_c2:
     st.markdown(
         f"""
-        <div style="text-align: right; font-size: 0.80rem; color: {PALETTE['text_secondary']}; padding-top: 4px;">
-            <div><b>Data Source:</b> <span style="color: {PALETTE['text_primary']}; font-weight: 600;">{data_source_label}</span></div>
-            <div><b>Last Synced:</b> <span style="color: {PALETTE['text_muted']};">{data_synced_at}</span></div>
+        <div style="text-align: right; font-size: 0.80rem; color: #64748B; padding-top: 4px;">
+            <div><b>Data Stream:</b> <span class="status-badge" style="margin-left: 4px;"><span class="status-dot" style="background:#16A34A;"></span>{data_source_label}</span></div>
+            <div style="margin-top: 4px;"><b>Last Synced:</b> <span style="color: #0F172A; font-weight: 600;">{data_synced_at}</span></div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -545,14 +577,23 @@ st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 # -----------------------------------------------------------------------------
 st.markdown(
     f"""
-    <div class="severity-banner" style="background: {severity['bg']}; border-color: {severity['border']};">
+    <div class="severity-banner" style="border-left-color: {severity['border']};">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <div class="severity-tag" style="background: {severity['bg']}; color: {severity['color']}; border: 1px solid {severity['border']};">
+                <span class="status-dot" style="background: {severity['color']};"></span>
+                LEVEL {severity['level_num']} ALERT: {severity['tier']}
+            </div>
+            <div style="font-size: 0.74rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em;">
+                Threshold: {DANGER_THRESHOLD:.2f} m³/s
+            </div>
+        </div>
         <div class="severity-title" style="color: {severity['color']};">
             {severity['headline']}
         </div>
         <div class="severity-body">
             {severity['summary']}
         </div>
-        <div style="margin-top: 10px; font-weight: 700; font-size: 0.88rem; color: {severity['color']};">
+        <div style="margin-top: 12px; font-weight: 700; font-size: 0.85rem; color: #0F172A; letter-spacing: 0.03em;">
             {severity['protocol_header']}
         </div>
         <ul class="action-list">
@@ -575,9 +616,10 @@ with kpi_c1:
         <div class="command-card">
             <div class="kpi-label">Forecast Tomorrow Flow</div>
             <div class="kpi-value" style="color: {severity['color']};">
-                {pred_flow:.2f} <span style="font-size: 1rem; color: {PALETTE['text_secondary']};">m³/s</span>
+                {pred_flow:.2f} <span style="font-size: 1.05rem; font-weight: 600; color: #64748B;">m³/s</span>
             </div>
             <div class="kpi-meta" style="color: {delta_color}; font-weight: 600;">
+                <span class="status-dot" style="background: {delta_color};"></span>
                 {delta_pred:+.2f} m³/s vs today ({active_inputs['q_mid']:.2f} m³/s)
             </div>
         </div>
@@ -591,10 +633,11 @@ with kpi_c2:
         f"""
         <div class="command-card">
             <div class="kpi-label">80% Confidence Interval</div>
-            <div class="kpi-value" style="color: {PALETTE['text_primary']};">
-                {low_flow:.2f} – {high_flow:.2f} <span style="font-size: 1rem; color: {PALETTE['text_secondary']};">m³/s</span>
+            <div class="kpi-value" style="color: #0F172A;">
+                {low_flow:.2f} – {high_flow:.2f} <span style="font-size: 1.05rem; font-weight: 600; color: #64748B;">m³/s</span>
             </div>
-            <div class="kpi-meta" style="color: {PALETTE['text_secondary']};">
+            <div class="kpi-meta" style="color: #475569;">
+                <span class="status-dot" style="background: #0F172A;"></span>
                 Quantile 10%–90% spread: ±{ci_half:.2f} m³/s
             </div>
         </div>
@@ -610,9 +653,10 @@ with kpi_c3:
         <div class="command-card">
             <div class="kpi-label">Channel Safety Margin</div>
             <div class="kpi-value" style="color: {severity['color']};">
-                {freeboard:+.2f} <span style="font-size: 1rem; color: {PALETTE['text_secondary']};">m³/s</span>
+                {freeboard:+.2f} <span style="font-size: 1.05rem; font-weight: 600; color: #64748B;">m³/s</span>
             </div>
-            <div class="kpi-meta" style="color: {PALETTE['text_secondary']};">
+            <div class="kpi-meta" style="color: #64748B;">
+                <span class="status-dot" style="background: {severity['color']};"></span>
                 Danger: {DANGER_THRESHOLD:.2f} m³/s • Buffer: {YELLOW_THRESHOLD:.2f} m³/s
             </div>
         </div>
@@ -626,10 +670,11 @@ with kpi_c4:
         <div class="command-card">
             <div class="kpi-label">AI Breach Probability</div>
             <div class="kpi-value" style="color: {severity['color']};">
-                {flood_prob:.1f}<span style="font-size: 1.1rem; color: {PALETTE['text_secondary']};">%</span>
+                {flood_prob:.1f}<span style="font-size: 1.15rem; font-weight: 600; color: #64748B;">%</span>
             </div>
             <div class="kpi-meta" style="color: {severity['color']}; font-weight: 700;">
-                {severity['icon']} Tier: {severity['tier']}
+                <span class="status-dot" style="background: {severity['color']};"></span>
+                Threat Level: {severity['tier']}
             </div>
         </div>
         """,
@@ -644,7 +689,7 @@ st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
 col_hydro, col_map = st.columns([7, 5])
 
 with col_hydro:
-    st.markdown("<div class='kpi-label'>24-Hour Singati River Hydrograph & Surge Cone</div>", unsafe_allow_html=True)
+    st.markdown("<div class='kpi-label'>24-Hour Predictive Hydrograph & Confidence Envelope</div>", unsafe_allow_html=True)
     timeline_hours = np.linspace(-24, 24, 49)
     past_curve = np.interp(timeline_hours[timeline_hours <= 0], [-24, 0], [active_inputs["q_yesterday"], active_inputs["q_mid"]])
     future_curve = np.interp(timeline_hours[timeline_hours > 0], [0, 24], [active_inputs["q_mid"], pred_flow])
@@ -694,7 +739,7 @@ with col_hydro:
         line_dash="dot",
         line_color=PALETTE["emergency"]["color"],
         line_width=2,
-        annotation_text=f"Red Danger ({DANGER_THRESHOLD:.2f} m³/s)",
+        annotation_text=f"Red Danger Line ({DANGER_THRESHOLD:.2f} m³/s)",
         annotation_position="top right",
         annotation_font=dict(color=PALETTE["emergency"]["color"], size=10),
     )
@@ -703,7 +748,7 @@ with col_hydro:
         line_dash="dashdot",
         line_color=PALETTE["watch"]["color"],
         line_width=1.5,
-        annotation_text=f"Yellow Watch ({YELLOW_THRESHOLD:.2f} m³/s)",
+        annotation_text=f"Yellow Watch Buffer ({YELLOW_THRESHOLD:.2f} m³/s)",
         annotation_position="bottom right",
         annotation_font=dict(color=PALETTE["watch"]["color"], size=10),
     )
@@ -720,7 +765,7 @@ with col_hydro:
     st.plotly_chart(fig_hydro, use_container_width=True)
 
 with col_map:
-    st.markdown("<div class='kpi-label'>3D Tamakoshi Corridor Telemetry Map</div>", unsafe_allow_html=True)
+    st.markdown("<div class='kpi-label'>3D River Corridor & Gauging Network</div>", unsafe_allow_html=True)
 
     def station_severity_color(val: float, is_target: bool = False):
         check_val = pred_flow if is_target else val
@@ -773,19 +818,19 @@ with col_map:
 st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 11. HIERARCHY STEP 4: Deep-Dive Diagnostic Tabs (One Job Per Tab)
+# 11. HIERARCHY STEP 4: Deep-Dive Diagnostic Tabs (No Emojis)
 # -----------------------------------------------------------------------------
 tab_gorge, tab_council, tab_gauges, tab_table, tab_method = st.tabs([
-    "🌊 3D River Gorge Twin",
-    "🧠 Council of 6 AI Models",
-    "⚡ Compound Physics Gauges",
-    "📋 Corridor Station Data",
-    "🔬 Methodology & Contacts",
+    "3D River Gorge Model",
+    "Multi-Model Ensemble",
+    "Hydrological Stress Indicators",
+    "Corridor Sensor Telemetry",
+    "System Architecture & Contacts",
 ])
 
-# ----------------- Tab 1: 3D River Gorge Twin -----------------
+# ----------------- Tab 1: 3D River Gorge Model -----------------
 with tab_gorge:
-    st.markdown("<div class='kpi-label'>Interactive 3D Singati River Gorge Digital Twin (Three.js WebGL)</div>", unsafe_allow_html=True)
+    st.markdown("<div class='kpi-label'>Interactive 3D Singati River Gorge Digital Model (Three.js WebGL)</div>", unsafe_allow_html=True)
     st.caption("Inspect dynamic water surface elevation, canyon terrain walls, and safety threshold planes in full 3D.")
 
     water_height_ratio = min(1.8, max(0.1, pred_flow / DANGER_THRESHOLD))
@@ -823,7 +868,7 @@ with tab_gorge:
             <div>{freeboard_text}</div>
             <div style="color:#64748B; font-size:0.72rem; margin-top:2px;">Danger Line: {DANGER_THRESHOLD:.2f} m³/s • Buffer: {YELLOW_THRESHOLD:.2f} m³/s</div>
         </div>
-        <div id="hint">🖱️ Left-Drag: Rotate | Right-Drag: Pan | Scroll: Zoom</div>
+        <div id="hint">Interaction: Left Click to Rotate | Right Click to Pan | Scroll to Zoom</div>
         <script>
             const scene = new THREE.Scene();
             scene.background = new THREE.Color(0xF8FAFC);
@@ -900,7 +945,7 @@ with tab_gorge:
     """
     components.html(three_js_html, height=490)
 
-# ----------------- Tab 2: Council of 6 AI Models -----------------
+# ----------------- Tab 2: Multi-Model Ensemble -----------------
 with tab_council:
     st.markdown("<div class='kpi-label'>Council of 6 Base Estimators vs. RidgeCV Meta-Learner</div>", unsafe_allow_html=True)
     st.caption("Comparison of base estimators with the stacked meta-regressor resolving individual model deltas.")
@@ -944,7 +989,7 @@ with tab_council:
     with sc3:
         st.metric("Meta-Learner Correction", f"{pred_flow - np.mean(base_only_flows):+.3f} m³/s", "RidgeCV cross-validated delta")
 
-# ----------------- Tab 3: Compound Physics Gauges -----------------
+# ----------------- Tab 3: Hydrological Stress Indicators -----------------
 with tab_gauges:
     st.markdown("<div class='kpi-label'>Coupled Glacial-Monsoon Physical Forcing Gauges</div>", unsafe_allow_html=True)
     st.caption("Physical environmental metrics driving non-linear overland runoff and moraine thermal melt.")
@@ -1025,7 +1070,7 @@ with tab_gauges:
         fig_g4.update_layout(template="plotly_white", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
         st.plotly_chart(fig_g4, use_container_width=True)
 
-# ----------------- Tab 4: Corridor Station Data -----------------
+# ----------------- Tab 4: Corridor Station Telemetry -----------------
 with tab_table:
     st.markdown("<div class='kpi-label'>Multi-Station Historical Discharge & Sensor Vectors</div>", unsafe_allow_html=True)
     st.caption("Active data fed into the 58-feature hydrological inference engine.")
@@ -1047,7 +1092,7 @@ with tab_table:
     }])
     st.dataframe(df_active_snapshot, use_container_width=True, hide_index=True)
 
-# ----------------- Tab 5: Methodology & Emergency Contacts -----------------
+# ----------------- Tab 5: System Architecture & Contacts -----------------
 with tab_method:
     st.markdown("<div class='kpi-label'>Life-Safety System Architecture & Model Limitations</div>", unsafe_allow_html=True)
 
@@ -1056,18 +1101,22 @@ with tab_method:
         st.markdown(
             f"""
             <div class="command-card" style="font-size: 0.88rem; line-height: 1.6;">
-                <b style="color: {PALETTE['text_primary']};">🔬 58 Hydrological Features Pipeline:</b>
-                <ul style="margin-top: 6px; padding-left: 18px; color: {PALETTE['text_secondary']};">
-                    <li><b>Cascading Hydrodynamics:</b> Station flow gradients, velocity ratios, and upstream sums.</li>
-                    <li><b>Temporal Acceleration:</b> 1st and 2nd order differencing plus percent surge change.</li>
+                <div style="font-weight: 700; color: #0F172A; margin-bottom: 8px;">
+                    58-Feature Hydrological Pipeline Architecture
+                </div>
+                <ul style="margin-top: 6px; padding-left: 18px; color: #475569;">
+                    <li><b>Cascading Hydrodynamics:</b> Station flow gradients, velocity ratios, and upstream corridor sums.</li>
+                    <li><b>Temporal Acceleration:</b> 1st and 2nd order differencing plus percentage surge acceleration.</li>
                     <li><b>Vadose Runoff Physics:</b> Coupled non-linear infiltration $R = P_{{basin}} \\times (\\text{{Soil}}_{{deep}})^2$.</li>
                     <li><b>Glacial Melt Thermodynamics:</b> Lapse-rate corrected 4,500m positive degree-days.</li>
-                    <li><b>Seasonality:</b> Dual-harmonic Fourier intra-annual curves.</li>
+                    <li><b>Seasonality Fourier Series:</b> Dual-harmonic intra-annual cyclical curves.</li>
                 </ul>
-                <b style="color: {PALETTE['emergency']['color']};">⚠️ Known Model Uncertainty & Limitations:</b>
-                <ul style="margin-top: 6px; padding-left: 18px; color: {PALETTE['text_secondary']};">
+                <div style="font-weight: 700; color: {PALETTE['emergency']['color']}; margin-top: 14px; margin-bottom: 6px;">
+                    Known Model Uncertainty & Physical Limitations
+                </div>
+                <ul style="margin-top: 6px; padding-left: 18px; color: #475569;">
                     <li>Ensemble trained on 42,540 station-days. High uncertainty during unmodeled landslide dam outbursts (LLDOF) or sudden glacial moraine wall collapse.</li>
-                    <li>Confidence bounds represent 80% coverage; extreme outliers beyond training envelope may exceed intervals.</li>
+                    <li>Confidence bounds represent 80% coverage; extreme outliers beyond historical training envelope may exceed intervals.</li>
                 </ul>
             </div>
             """,
@@ -1078,22 +1127,24 @@ with tab_method:
         st.markdown(
             f"""
             <div class="command-card" style="font-size: 0.88rem; line-height: 1.6;">
-                <b style="color: {PALETTE['emergency']['color']};">📞 Official Disaster Response Contacts (Dolakha):</b>
-                <div style="margin-top: 8px;">
-                    <div><b>Dolakha District Emergency Ops (DEOC):</b></div>
-                    <code style="color:{PALETTE['text_primary']}; background:#F1F5F9; padding:2px 6px; border-radius:4px;">[PLACEHOLDER: Charikot DEOC VHF Ch 4 / +977-49-421111]</code>
+                <div style="font-weight: 700; color: #0F172A; margin-bottom: 8px;">
+                    Official Disaster Response Directory (Dolakha District)
                 </div>
-                <div style="margin-top: 8px;">
-                    <div><b>Armed Police Force Disaster Unit (Singati):</b></div>
-                    <code style="color:{PALETTE['text_primary']}; background:#F1F5F9; padding:2px 6px; border-radius:4px;">[PLACEHOLDER: APF Disaster Base / +977-49-421999]</code>
+                <div style="margin-top: 10px;">
+                    <div style="font-size: 0.80rem; font-weight: 600; color: #64748B;">Dolakha District Emergency Operations Center (DEOC):</div>
+                    <code style="color:#0F172A; background:#F1F5F9; padding:4px 8px; border-radius:4px; font-weight: 600; display: inline-block; margin-top: 2px;">[PLACEHOLDER: Charikot DEOC VHF Ch 4 / +977-49-421111]</code>
                 </div>
-                <div style="margin-top: 8px;">
-                    <div><b>Upper Tamakoshi Hydropower Control:</b></div>
-                    <code style="color:{PALETTE['text_primary']}; background:#F1F5F9; padding:2px 6px; border-radius:4px;">[PLACEHOLDER: Gongar Dam Control Room / +977-49-420000]</code>
+                <div style="margin-top: 10px;">
+                    <div style="font-size: 0.80rem; font-weight: 600; color: #64748B;">Armed Police Force Disaster Unit (Singati Base):</div>
+                    <code style="color:#0F172A; background:#F1F5F9; padding:4px 8px; border-radius:4px; font-weight: 600; display: inline-block; margin-top: 2px;">[PLACEHOLDER: APF Disaster Base / +977-49-421999]</code>
                 </div>
-                <div style="margin-top: 8px;">
-                    <div><b>National Flood Forecasting Toll-Free:</b></div>
-                    <code style="color:{PALETTE['text_primary']}; background:#F1F5F9; padding:2px 6px; border-radius:4px;">[PLACEHOLDER: DHM Emergency Desk / Toll-Free 1155]</code>
+                <div style="margin-top: 10px;">
+                    <div style="font-size: 0.80rem; font-weight: 600; color: #64748B;">Upper Tamakoshi Hydropower Control Room:</div>
+                    <code style="color:#0F172A; background:#F1F5F9; padding:4px 8px; border-radius:4px; font-weight: 600; display: inline-block; margin-top: 2px;">[PLACEHOLDER: Gongar Dam Control Room / +977-49-420000]</code>
+                </div>
+                <div style="margin-top: 10px;">
+                    <div style="font-size: 0.80rem; font-weight: 600; color: #64748B;">National Flood Forecasting Toll-Free Emergency Desk:</div>
+                    <code style="color:#0F172A; background:#F1F5F9; padding:4px 8px; border-radius:4px; font-weight: 600; display: inline-block; margin-top: 2px;">[PLACEHOLDER: DHM Emergency Desk / Toll-Free 1155]</code>
                 </div>
             </div>
             """,
