@@ -50,184 +50,277 @@ DANGER_THRESHOLD = float(bundle["threshold"])
 YELLOW_THRESHOLD = DANGER_THRESHOLD * 0.90  # 6.02 m³/s
 
 # ---------------------------------------------------------
-# Custom Styling: Dark Slate Hydrology Theme & Glassmorphism
+# Custom Styling: Premium Hydrology Command Center Theme
 # ---------------------------------------------------------
 st.markdown(
     """
     <style>
-    /* Dark Slate Hydrology Command Center Palette */
     :root {
-        --bg-main: #0B1120;
-        --card-bg: rgba(15, 23, 42, 0.78);
-        --card-border: rgba(56, 189, 248, 0.18);
-        --accent-cyan: #38BDF8;
-        --accent-amber: #F59E0B;
-        --accent-red: #EF4444;
-        --accent-emerald: #10B981;
+        --bg-main: #07111f;
+        --bg-panel: rgba(12, 19, 31, 0.85);
+        --bg-panel-strong: rgba(15, 23, 42, 0.96);
+        --card-border: rgba(148, 163, 184, 0.18);
+        --accent-cyan: #67e8f9;
+        --accent-blue: #38bdf8;
+        --accent-amber: #fbbf24;
+        --accent-red: #f87171;
+        --accent-emerald: #34d399;
+        --text-primary: #f8fafc;
+        --text-secondary: #b8c3d6;
+        --text-muted: #8ea3bf;
     }
-    
+
+    html, body {
+        background: var(--bg-main);
+    }
+
     .stApp {
-        background-color: var(--bg-main);
-        color: #F1F5F9;
+        background:
+            radial-gradient(circle at top left, rgba(56, 189, 248, 0.10), transparent 24%),
+            radial-gradient(circle at top right, rgba(34, 197, 94, 0.08), transparent 20%),
+            linear-gradient(180deg, #07111f 0%, #0b1728 100%);
+        color: var(--text-primary);
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
     }
-    
-    /* Hero Banner Container */
+
+    .main .block-container {
+        padding-top: 1.4rem;
+        padding-bottom: 2.5rem;
+        max-width: 1500px;
+    }
+
+    section[data-testid="stSidebar"] {
+        background: rgba(8, 13, 22, 0.92);
+        border-right: 1px solid rgba(148, 163, 184, 0.16);
+    }
+
+    section[data-testid="stSidebar"] > div {
+        padding-top: 1rem;
+    }
+
+    .stSidebar .block-container {
+        padding-top: 0.75rem;
+    }
+
+    [data-testid="stSidebarNav"] {
+        background: rgba(15, 23, 42, 0.5);
+    }
+
+    [data-testid="stSidebarNav"] a,
+    [data-testid="stSidebarNav"] span {
+        color: var(--text-secondary) !important;
+    }
+
+    .stSelectbox > div,
+    .stNumberInput > div,
+    .stSlider > div,
+    .stCheckbox > label,
+    .stRadio > div {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        border-radius: 12px;
+    }
+
+    .stNumberInput input,
+    .stSelectbox div[data-baseweb="select"] {
+        color: var(--text-primary) !important;
+        background: transparent !important;
+    }
+
     .hero-container {
         position: relative;
-        border-radius: 16px;
         overflow: hidden;
-        margin-bottom: 24px;
-        border: 1px solid rgba(56, 189, 248, 0.25);
-        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
-        background: linear-gradient(180deg, rgba(15, 23, 42, 0.2) 0%, rgba(11, 17, 32, 0.96) 100%),
-                    url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
-        padding: 38px 32px 28px 32px;
+        margin-bottom: 1.5rem;
+        padding: 2rem 2rem 1.6rem 2rem;
+        border-radius: 22px;
+        border: 1px solid rgba(103, 232, 249, 0.25);
+        background:
+            linear-gradient(135deg, rgba(8, 15, 25, 0.68), rgba(7, 17, 31, 0.75)),
+            url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+        box-shadow: 0 24px 60px rgba(2, 6, 23, 0.6);
     }
-    
+
+    .hero-container::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, rgba(56, 189, 248, 0.08), rgba(14, 165, 233, 0.04), transparent 70%);
+        pointer-events: none;
+    }
+
+    .hero-title,
+    .hero-subtitle,
+    .badge-pill-container {
+        position: relative;
+        z-index: 1;
+    }
+
     .hero-title {
-        font-size: 2.1rem;
-        font-weight: 800;
-        letter-spacing: -0.025em;
-        color: #F8FAFC;
-        margin: 0 0 8px 0;
-        text-shadow: 0 2px 10px rgba(0,0,0,0.8);
         display: flex;
         align-items: center;
         gap: 12px;
+        margin: 0 0 0.65rem 0;
+        font-size: clamp(1.8rem, 2.7vw, 2.8rem);
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        color: var(--text-primary);
+        text-shadow: 0 4px 24px rgba(2, 6, 23, 0.8);
     }
-    
+
     .hero-subtitle {
-        font-size: 1.05rem;
-        color: #94A3B8;
-        margin-bottom: 20px;
-        max-width: 900px;
-        line-height: 1.5;
-        text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+        max-width: 980px;
+        font-size: 1.04rem;
+        line-height: 1.7;
+        color: rgba(226, 232, 240, 0.9);
+        text-shadow: 0 2px 8px rgba(2, 6, 23, 0.75);
+        margin-bottom: 1.2rem;
     }
-    
+
     .badge-pill-container {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 0.65rem;
     }
-    
+
     .badge-pill {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 6px 14px;
-        border-radius: 9999px;
-        font-size: 0.8rem;
-        font-weight: 600;
+        gap: 0.45rem;
+        padding: 0.58rem 0.9rem;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 700;
         letter-spacing: 0.02em;
-        background: rgba(15, 23, 42, 0.85);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        color: #E2E8F0;
+        background: rgba(15, 23, 42, 0.68);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        color: #e2e8f0;
+        backdrop-filter: blur(10px);
     }
-    
-    .badge-pill.cyan { border-color: rgba(56, 189, 248, 0.5); color: #38BDF8; }
-    .badge-pill.amber { border-color: rgba(245, 158, 11, 0.5); color: #F59E0B; }
-    .badge-pill.emerald { border-color: rgba(16, 185, 129, 0.5); color: #10B981; }
-    .badge-pill.red { border-color: rgba(239, 68, 68, 0.5); color: #EF4444; }
-    
-    /* Glassmorphism Metric Cards */
-    .metric-card-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-    
+
+    .badge-pill.cyan { border-color: rgba(103, 232, 249, 0.45); color: #67e8f9; }
+    .badge-pill.amber { border-color: rgba(251, 191, 36, 0.45); color: #fbbf24; }
+    .badge-pill.emerald { border-color: rgba(52, 211, 153, 0.45); color: #34d399; }
+    .badge-pill.red { border-color: rgba(248, 113, 113, 0.45); color: #f87171; }
+
     .glass-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 14px;
-        padding: 20px 22px;
-        backdrop-filter: blur(12px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-        transition: transform 0.2s ease, border-color 0.2s ease;
+        position: relative;
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.72));
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 18px;
+        padding: 1.2rem 1.25rem;
+        box-shadow: 0 18px 40px rgba(2, 6, 23, 0.28);
+        backdrop-filter: blur(14px);
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
-    
+
     .glass-card:hover {
         transform: translateY(-2px);
-        border-color: rgba(56, 189, 248, 0.4);
+        border-color: rgba(103, 232, 249, 0.42);
+        box-shadow: 0 24px 50px rgba(14, 165, 233, 0.10);
     }
-    
+
     .glass-card .label {
-        font-size: 0.82rem;
-        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #94A3B8;
-        margin-bottom: 6px;
+        color: var(--text-muted);
     }
-    
+
     .glass-card .value {
-        font-size: 1.85rem;
+        font-size: clamp(1.5rem, 2vw, 2rem);
         font-weight: 800;
-        color: #F8FAFC;
         line-height: 1.2;
+        color: var(--text-primary);
     }
-    
+
     .glass-card .delta {
-        font-size: 0.84rem;
-        margin-top: 6px;
+        margin-top: 0.45rem;
+        font-size: 0.8rem;
         font-weight: 600;
     }
-    
-    /* Emergency Alert Action Banners */
+
     .action-banner {
-        border-radius: 14px;
-        padding: 22px 24px;
-        margin-bottom: 24px;
+        border-radius: 18px;
+        padding: 1.35rem 1.4rem;
+        margin-bottom: 1.5rem;
         border: 1px solid;
-        backdrop-filter: blur(12px);
+        box-shadow: 0 18px 45px rgba(2, 6, 23, 0.26);
+        backdrop-filter: blur(14px);
     }
-    
+
     .action-banner.red {
-        background: rgba(127, 29, 29, 0.35);
-        border-color: #EF4444;
-        box-shadow: 0 0 25px rgba(239, 68, 68, 0.25);
+        background: linear-gradient(180deg, rgba(127, 29, 29, 0.28), rgba(69, 10, 10, 0.13));
+        border-color: rgba(248, 113, 113, 0.5);
     }
-    
+
     .action-banner.yellow {
-        background: rgba(120, 53, 15, 0.35);
-        border-color: #F59E0B;
-        box-shadow: 0 0 25px rgba(245, 158, 11, 0.2);
+        background: linear-gradient(180deg, rgba(120, 53, 15, 0.28), rgba(91, 40, 10, 0.15));
+        border-color: rgba(251, 191, 36, 0.5);
     }
-    
+
     .action-banner.green {
-        background: rgba(6, 78, 59, 0.35);
-        border-color: #10B981;
-        box-shadow: 0 0 25px rgba(16, 185, 129, 0.15);
+        background: linear-gradient(180deg, rgba(6, 78, 59, 0.22), rgba(6, 78, 59, 0.12));
+        border-color: rgba(52, 211, 153, 0.5);
     }
-    
+
     .banner-title {
-        font-size: 1.25rem;
+        margin-bottom: 0.7rem;
+        font-size: 1.22rem;
         font-weight: 800;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        letter-spacing: -0.02em;
     }
-    
+
     .banner-text {
-        font-size: 0.95rem;
+        color: var(--text-primary);
+        font-size: 0.96rem;
         line-height: 1.6;
-        color: #E2E8F0;
     }
-    
+
     .protocol-list {
-        margin-top: 12px;
-        padding-left: 20px;
-        font-size: 0.9rem;
-        color: #CBD5E1;
+        margin-top: 0.9rem;
+        padding-left: 1.15rem;
+        color: rgba(226, 232, 240, 0.9);
+        line-height: 1.7;
     }
-    
+
     .protocol-list li {
-        margin-bottom: 4px;
+        margin-bottom: 0.15rem;
+    }
+
+    h3 {
+        margin-top: 1.8rem !important;
+        margin-bottom: 0.25rem !important;
+        color: var(--text-primary) !important;
+        letter-spacing: -0.03em !important;
+    }
+
+    .stCaption {
+        color: var(--text-secondary) !important;
+        margin-bottom: 0.8rem !important;
+    }
+
+    .stTabs [role="tablist"] {
+        gap: 0.5rem;
+    }
+
+    .stTabs [role="tab"] {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        border-radius: 12px 12px 0 0;
+        color: var(--text-secondary);
+        padding: 0.6rem 1rem;
+    }
+
+    .stTabs [role="tab"][aria-selected="true"] {
+        background: linear-gradient(180deg, rgba(56, 189, 248, 0.17), rgba(15, 23, 42, 0.8));
+        color: var(--text-primary);
+        border-color: rgba(103, 232, 249, 0.4);
+    }
+
+    .stApp > div > div {
+        background: transparent;
     }
     </style>
     """,
@@ -239,9 +332,18 @@ st.markdown(
 # ---------------------------------------------------------
 st.sidebar.markdown(
     """
-    <div style='text-align: center; margin-bottom: 12px;'>
-        <h2 style='margin:0; font-size:1.4rem; color:#38BDF8;'>🏔️ Tamakoshi AI</h2>
-        <span style='font-size:0.8rem; color:#94A3B8;'>Himalayan Basin Early Warning</span>
+    <div style='
+        padding: 1rem 0.9rem 0.8rem 0.9rem;
+        margin: 0.2rem 0 1.2rem 0;
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(8, 13, 22, 0.88));
+        border: 1px solid rgba(103, 232, 249, 0.22);
+        box-shadow: 0 14px 28px rgba(2, 6, 23, 0.28);
+        text-align: center;
+    '>
+        <div style='font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: #67e8f9; font-weight: 700; margin-bottom: 0.35rem;'>Hydrology AI</div>
+        <h2 style='margin: 0; font-size: 1.45rem; color: #F8FAFC; line-height: 1.2;'>🏔️ Tamakoshi AI</h2>
+        <div style='margin-top: 0.35rem; font-size: 0.8rem; color: #9fb4cf;'>Himalayan Basin Early Warning</div>
     </div>
     """,
     unsafe_allow_html=True,
