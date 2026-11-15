@@ -6,3 +6,5 @@ catboost
 pandas
 numpy
 joblib
+pydeck
+plotly
