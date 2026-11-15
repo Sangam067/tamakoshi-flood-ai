@@ -1,10 +1,16 @@
 import sys
+import types
 
 try:
     import _loss  # noqa: F401
 except ModuleNotFoundError:
-    import sklearn._loss._loss as _sk_loss
-    sys.modules["_loss"] = _sk_loss
+    import sklearn._loss._loss as _cy_loss
+    import sklearn._loss.loss as _py_loss
+
+    _loss_shim = types.ModuleType("_loss")
+    _loss_shim.__dict__.update(_py_loss.__dict__)
+    _loss_shim.__dict__.update(_cy_loss.__dict__)
+    sys.modules["_loss"] = _loss_shim
 
 import joblib
 import numpy as np
@@ -19,7 +25,15 @@ def load_bundle():
     return joblib.load("tamakoshi_ultimate_model.joblib")
 
 
-bundle = load_bundle()
+try:
+    bundle = load_bundle()
+except ValueError as err:
+    st.error(
+        f"Model binary compatibility error under Python {sys.version.split()[0]}: `{err}`. "
+        "Delete this app on Streamlit Cloud and redeploy with **Advanced settings → Python version → 3.12**."
+    )
+    st.stop()
+
 base_models = bundle["base_models"]
 model_names = bundle["model_names"]
 meta_learner = bundle["meta_learner"]
