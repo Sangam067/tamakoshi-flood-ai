@@ -12,11 +12,11 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from services.tamakoshi_api import load_model_bundle, route_live_basin_telemetry
-from ui_theme import render_page_intro, render_site_navigation
+from ui_theme import render_page_intro, render_site_navigation, tamakoshi_logo_svg
 
 st.set_page_config(
     page_title="Live Data & History | Tamakoshi Flood AI",
-    page_icon="📈",
+    page_icon=tamakoshi_logo_svg(),
     layout="wide",
     initial_sidebar_state="collapsed",
 )

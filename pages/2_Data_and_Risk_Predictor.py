@@ -23,11 +23,11 @@ from services.email_alerts import (
     get_email_settings,
     send_demo_email,
 )
-from ui_theme import render_page_intro, render_site_navigation
+from ui_theme import render_page_intro, render_site_navigation, tamakoshi_logo_svg
 
 st.set_page_config(
     page_title="Data & Risk Predictor | Tamakoshi Flood AI",
-    page_icon="🌊",
+    page_icon=tamakoshi_logo_svg(),
     layout="wide",
     initial_sidebar_state="collapsed",
 )

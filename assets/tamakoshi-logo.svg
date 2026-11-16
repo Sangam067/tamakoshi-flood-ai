@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="sensorGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2CE5B5" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#2CE5B5" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <g fill="none" stroke="#FFFFFF" stroke-width="10.5" stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M 110 330 L 182 225 L 226 289" />
+    <path d="M 204 257 L 248 182 L 288 242 L 304 215 L 326 249" />
+    <line x1="225" y1="220" x2="273" y2="220" />
+  </g>
+  <path fill="#34C5EA" d="M 107 328
+       L 172 328
+       C 238 328, 278 256, 332 256
+       C 352 256, 366 265, 374 277
+       C 358 271, 342 278, 342 296
+       C 342 316, 362 328, 386 328
+       L 405 328
+       L 405 338
+       L 384 338
+       C 350 338, 330 320, 330 296
+       C 330 278, 342 268, 354 268
+       C 347 265, 340 265, 332 265
+       C 282 265, 242 338, 172 338
+       L 103 338 Z" />
+  <circle cx="301" cy="304" r="22" fill="url(#sensorGlow)" />
+  <polygon fill="#2CE5B5" points="301,294.5 309.2,299.25 309.2,308.75 301,313.5 292.8,308.75 292.8,299.25" />
+</svg>

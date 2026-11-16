@@ -1,12 +1,21 @@
 """Theme tokens and shared Streamlit styling for the flood dashboard."""
 
+import base64
 from copy import deepcopy
+from functools import lru_cache
 import html
+from pathlib import Path
 
 import streamlit as st
 
 
 FONT_STACK = '"Inter", "Segoe UI", Arial, sans-serif'
+LOGO_PATH = Path(__file__).resolve().parent / "assets" / "tamakoshi-logo.svg"
+
+
+@lru_cache(maxsize=1)
+def tamakoshi_logo_svg() -> str:
+    return LOGO_PATH.read_text(encoding="utf-8")
 
 SEVERITY_COLORS = {
     "normal": "#15803D",
@@ -350,18 +359,38 @@ SITE_CSS = """
     }
     .site-brand {
         display: flex;
-        align-items: baseline;
-        gap: 0.65rem;
+        align-items: center;
+        gap: 0.8rem;
         font-family: Georgia, "Times New Roman", serif;
     }
-    .site-brand-mark {
-        color: #237D83;
-        font-size: 1.25rem;
+    .site-brand-logo-wrap {
+        display: grid;
+        width: 48px;
+        height: 48px;
+        flex: 0 0 48px;
+        place-items: center;
+        overflow: hidden;
+        border-radius: 12px;
+        background: #102C3A;
+        box-shadow: 0 3px 10px rgba(16, 44, 58, 0.18);
+    }
+    .site-brand-logo {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .site-brand-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
     }
     .site-brand-name {
+        color: #172C36;
         font-size: 1.35rem;
         font-weight: 700;
         letter-spacing: -0.035em;
+        line-height: 1.1;
     }
     .site-brand-caption, .site-nav-note {
         color: #69777A;
@@ -606,13 +635,18 @@ SITE_CSS = """
 def render_site_navigation(active_page: str) -> None:
     """Render the shared, sidebar-free navigation for all app pages."""
     st.markdown(SITE_CSS, unsafe_allow_html=True)
+    logo_data = base64.b64encode(tamakoshi_logo_svg().encode("utf-8")).decode("ascii")
     st.markdown(
-        """
+        f"""
         <div class="site-nav">
             <div class="site-brand">
-                <span class="site-brand-mark">≈</span>
-                <span class="site-brand-name">Tamakoshi</span>
-                <span class="site-brand-caption">River watch</span>
+                <span class="site-brand-logo-wrap">
+                    <img class="site-brand-logo" src="data:image/svg+xml;base64,{logo_data}" alt="Tamakoshi River logo">
+                </span>
+                <span class="site-brand-copy">
+                    <span class="site-brand-name">Tamakoshi</span>
+                    <span class="site-brand-caption">River watch</span>
+                </span>
             </div>
             <div class="site-nav-note">Glacier · River · Valley &nbsp; / &nbsp; Dolakha, Nepal</div>
         </div>

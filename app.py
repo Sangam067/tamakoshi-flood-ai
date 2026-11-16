@@ -44,7 +44,7 @@ from services.tamakoshi_api import (
     compute_forecast_from_inputs,
 )
 from services.email_alerts import send_live_red_alert_once
-from ui_theme import render_river_hero, render_site_navigation
+from ui_theme import render_river_hero, render_site_navigation, tamakoshi_logo_svg
 
 # -----------------------------------------------------------------------------
 # 2. Design System Tokens: Modern Hydrological Command Palette
@@ -107,7 +107,7 @@ PALETTE = {
 # -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="Tamakoshi River Flood Early Warning Command Center",
-    page_icon="🌊",
+    page_icon=tamakoshi_logo_svg(),
     layout="wide",
     initial_sidebar_state="collapsed",
 )
