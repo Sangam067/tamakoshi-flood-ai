@@ -531,8 +531,36 @@ SITE_CSS = """
         color: #172C36 !important;
     }
     [data-testid="stPopoverBody"] {
-        border: 1px solid #D9D0BF;
-        background: #F3EEE3;
+        border: 1px solid #B8D3DF;
+        background: #EAF3F6;
+        color: #172C36;
+    }
+    [data-testid="stPopoverBody"] [data-testid="stCaptionContainer"],
+    [data-testid="stPopoverBody"] [data-testid="stCaptionContainer"] p {
+        color: #172C36 !important;
+    }
+    [data-testid="stPopoverBody"] .stButton > button,
+    [data-testid="stPopoverBody"] [data-testid="stBaseButton-secondary"] {
+        min-height: 46px;
+        border: 1px solid #AFCBD8 !important;
+        border-radius: 7px !important;
+        background: #D7EAF1 !important;
+        color: #172C36 !important;
+        box-shadow: none !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        transform: none !important;
+    }
+    [data-testid="stPopoverBody"] .stButton > button:hover,
+    [data-testid="stPopoverBody"] [data-testid="stBaseButton-secondary"]:hover {
+        border-color: #80B3C6 !important;
+        background: #BDDCE8 !important;
+        color: #102832 !important;
+        box-shadow: 0 2px 7px rgba(34, 89, 107, 0.16) !important;
+        transform: none !important;
+    }
+    [data-testid="stPopoverBody"] hr {
+        border-color: #B8D3DF !important;
     }
     @keyframes river-current {
         to { stroke-dashoffset: -224; }
