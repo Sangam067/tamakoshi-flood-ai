@@ -358,6 +358,11 @@ with st.expander("Email alerts and judge demo"):
         "when the app reruns, and telemetry can be cached for up to 30 minutes; "
         "this is not a 24/7 emergency-warning service."
     )
+    st.caption(
+        "SMTP providers such as Brevo are supported. Enter the provider's SMTP "
+        "server, login, and key in Streamlit Secrets; the sender address must be "
+        "verified with that provider. Existing Gmail app-password settings still work."
+    )
     try:
         email_settings = get_email_settings()
     except EmailConfigurationError as exc:

@@ -17,8 +17,9 @@ class EmailConfigurationError(ValueError):
 class EmailSettings:
     smtp_host: str
     smtp_port: int
+    smtp_username: str
+    smtp_password: str
     sender_email: str
-    app_password: str
     recipient_email: str
     enabled: bool
 
@@ -29,8 +30,17 @@ def get_email_settings() -> Optional[EmailSettings]:
     except (FileNotFoundError, KeyError):
         return None
 
-    required = ("smtp_host", "smtp_port", "sender_email", "app_password", "recipient_email")
-    missing = [key for key in required if not config.get(key)]
+    smtp_username = config.get("smtp_username") or config.get("sender_email")
+    smtp_password = config.get("smtp_password") or config.get("app_password")
+    values = {
+        "smtp_host": config.get("smtp_host"),
+        "smtp_port": config.get("smtp_port"),
+        "smtp_username": smtp_username,
+        "smtp_password": smtp_password,
+        "sender_email": config.get("sender_email"),
+        "recipient_email": config.get("recipient_email"),
+    }
+    missing = [key for key, value in values.items() if not value]
     if missing:
         raise EmailConfigurationError(
             "Email settings are incomplete. Missing: " + ", ".join(missing)
@@ -50,8 +60,9 @@ def get_email_settings() -> Optional[EmailSettings]:
     return EmailSettings(
         smtp_host=str(config["smtp_host"]),
         smtp_port=port,
+        smtp_username=str(smtp_username),
+        smtp_password=str(smtp_password),
         sender_email=str(config["sender_email"]),
-        app_password=str(config["app_password"]),
         recipient_email=str(config["recipient_email"]),
         enabled=enabled,
     )
@@ -69,7 +80,7 @@ def _send_email(settings: EmailSettings, subject: str, body: str) -> None:
         smtp.ehlo()
         smtp.starttls(context=context)
         smtp.ehlo()
-        smtp.login(settings.sender_email, settings.app_password)
+        smtp.login(settings.smtp_username, settings.smtp_password)
         smtp.send_message(message)
 
 
