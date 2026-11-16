@@ -43,6 +43,7 @@ from services.tamakoshi_api import (
     route_live_basin_telemetry,
     compute_forecast_from_inputs,
 )
+from services.email_alerts import send_live_red_alert_once
 from ui_theme import render_river_hero, render_site_navigation
 
 # -----------------------------------------------------------------------------
@@ -407,6 +408,16 @@ live_history_df = live_payload["history_df"]
 # 6. Core ML Prediction Engine (Exact 58 Features & 6 Models)
 # -----------------------------------------------------------------------------
 forecast = compute_forecast_from_inputs(bundle, active_inputs)
+email_alert_status = send_live_red_alert_once(
+    forecast,
+    live_payload["source_mode"],
+    data_synced_at,
+)
+if email_alert_status:
+    if email_alert_status.startswith("High-risk email sent"):
+        st.success(email_alert_status)
+    else:
+        st.error(email_alert_status)
 
 pred_flow = forecast["pred_flow"]
 delta_pred = forecast["delta_pred"]

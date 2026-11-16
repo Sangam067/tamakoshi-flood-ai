@@ -3,6 +3,7 @@
 import calendar
 import os
 import sys
+import smtplib
 
 import plotly.graph_objects as go
 import streamlit as st
@@ -15,6 +16,12 @@ from services.tamakoshi_api import (
     compute_forecast_from_inputs,
     load_model_bundle,
     route_live_basin_telemetry,
+)
+from services.email_alerts import (
+    EmailConfigurationError,
+    demo_email_content,
+    get_email_settings,
+    send_demo_email,
 )
 from ui_theme import render_page_intro, render_site_navigation
 
@@ -342,6 +349,48 @@ fig.update_layout(
     height=360,
 )
 st.plotly_chart(fig, width="stretch")
+
+with st.expander("Email alerts and judge demo"):
+    st.write(
+        "Automatic emails are sent only when live telemetry produces a RED ALERT, "
+        "and only once per red event in this browser session. Manual predictions "
+        "and fallback snapshots never send automatic alerts. Monitoring runs only "
+        "when the app reruns, and telemetry can be cached for up to 30 minutes; "
+        "this is not a 24/7 emergency-warning service."
+    )
+    try:
+        email_settings = get_email_settings()
+    except EmailConfigurationError as exc:
+        email_settings = None
+        st.error(str(exc))
+
+    if email_settings is None:
+        st.caption(
+            "Email is not configured. Copy `.streamlit/secrets.toml.example` to "
+            "`.streamlit/secrets.toml` and enter your SMTP settings privately. "
+            "For real alerts, set `enabled = true`; leave it false for demo-only use."
+        )
+    elif email_settings.enabled:
+        st.success("Automatic live RED ALERT emails are enabled.")
+    else:
+        st.info(
+            "SMTP is configured, but automatic alerts are disabled. "
+            "The manual demo button can still send a clearly labeled test email."
+        )
+
+    if st.button("Send demo email", key="send_tamakoshi_demo_email"):
+        try:
+            recipient = send_demo_email(forecast)
+        except EmailConfigurationError as exc:
+            st.warning(str(exc))
+            subject, body = demo_email_content(forecast)
+            st.markdown("**Email preview — not sent**")
+            st.code(f"{subject}\n\n{body}")
+        except (OSError, smtplib.SMTPException, ValueError) as exc:
+            st.error(f"Demo email could not be sent: {exc}")
+        else:
+            st.success(f"Demo email sent to {recipient}.")
+
 st.warning(
     "This model output is decision support, not an official flood warning. "
     "Verify measurements and follow local disaster-management authorities."
