@@ -12,17 +12,21 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from services.tamakoshi_api import load_model_bundle, route_live_basin_telemetry
+from ui_theme import render_page_intro, render_site_navigation
 
 st.set_page_config(
     page_title="Live Data & History | Tamakoshi Flood AI",
     page_icon="📈",
     layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
-st.title("Live Tamakoshi Data & Recent Risk History")
-st.caption(
+render_site_navigation("history")
+render_page_intro(
+    "TELEMETRY · OBSERVED RISK",
+    "Follow the river",
     "Explore upstream-to-downstream discharge, rainfall, and observed Singati "
-    "risk levels over the latest available months."
+    "risk levels over the latest available months.",
 )
 
 try:
@@ -41,7 +45,7 @@ with controls_col:
     )
 with refresh_col:
     st.markdown("<div style='height: 28px'></div>", unsafe_allow_html=True)
-    refresh =     st.button("Refresh live data", width="stretch")
+    refresh = st.button("Refresh live data", width="stretch")
 if refresh:
     st.cache_data.clear()
 

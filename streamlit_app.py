@@ -9,7 +9,6 @@ import sys
 import types
 import os
 import json
-from datetime import datetime, timezone, timedelta
 
 # -----------------------------------------------------------------------------
 # 1. Critical ML Compatibility Shim: scikit-learn _loss
@@ -44,6 +43,7 @@ from services.tamakoshi_api import (
     route_live_basin_telemetry,
     compute_forecast_from_inputs,
 )
+from ui_theme import render_river_hero, render_site_navigation
 
 # -----------------------------------------------------------------------------
 # 2. Design System Tokens: Modern Hydrological Command Palette
@@ -108,8 +108,9 @@ st.set_page_config(
     page_title="Tamakoshi River Flood Early Warning Command Center",
     page_icon="🌊",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
+st.session_state["_tamakoshi_main_script"] = os.path.basename(__file__)
 
 CUSTOM_CSS = f"""
 <style>
@@ -128,15 +129,6 @@ CUSTOM_CSS = f"""
     /* Hide standard menu & footer */
     #MainMenu, footer, header {{
         visibility: hidden !important;
-    }}
-
-    /* Sidebar styled as high-tech filter console */
-    section[data-testid="stSidebar"] {{
-        background: #0E1626 !important;
-        border-right: 1px solid {PALETTE["border_subtle"]} !important;
-    }}
-    section[data-testid="stSidebar"] .block-container {{
-        padding: 1.2rem 1.1rem !important;
     }}
 
     /* Modern Command Center Cards */
@@ -315,6 +307,7 @@ CUSTOM_CSS = f"""
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+render_site_navigation("home")
 
 # -----------------------------------------------------------------------------
 # 4. Safe Model Loading & Core Data Logic
@@ -401,157 +394,14 @@ def classify_alert_severity(pred_flow: float, flood_prob: float) -> dict:
         }
 
 
-# Calibrated Historical Scenarios for Stress Testing
-SCENARIOS = {
-    "Scenario 3: Cloudburst and Glacial Siphon Breach (Emergency Alert)": (
-        6.60, 5.55, 1.15, 4.35, 9.80, 58.0, 42.0, 135.0, 230.0, 3, 48, 24.0, 15.5, 0.0, 22.5, 8
-    ),
-    "Scenario 2: Active Monsoon Surge (Yellow Watch)": (
-        5.85, 5.20, 0.85, 3.70, 8.40, 28.0, 20.0, 68.0, 135.0, 7, 41, 22.0, 14.0, 0.0, 19.5, 7
-    ),
-    "Scenario 1: Dry Winter Baseflow (Normal Baseline)": (
-        0.35, 0.36, 0.05, 0.22, 0.55, 0.0, 0.0, 0.5, 2.0, 0, 22, 14.0, 2.5, 0.0, 14.5, 2
-    ),
-    "Custom Simulation (Manual Calibration)": None,
-}
+# 5. Live basin telemetry
+with st.spinner("Connecting to the Tamakoshi telemetry services..."):
+    live_payload = route_live_basin_telemetry(past_days=14)
 
-SIMULATION_INPUT_KEYS = (
-    "sim_q_mid", "sim_q_yesterday", "sim_q_glacier", "sim_q_upper", "sim_q_lower",
-    "sim_rain_mid", "sim_rain_glacier", "sim_rain_3d", "sim_rain_7d", "sim_rain_hours",
-    "sim_soil_sat", "sim_tmax", "sim_tmin", "sim_snow", "sim_solar", "sim_month",
-)
-CUSTOM_SIMULATION_DEFAULTS = (
-    6.60, 5.55, 1.15, 4.35, 9.80, 58.0, 42.0, 135.0, 230.0, 3, 48, 24.0, 15.5, 0.0, 22.5, 8
-)
-
-
-def apply_scenario_preset() -> None:
-    """Apply a selected preset before its simulation widgets are recreated."""
-    scenario = SCENARIOS[st.session_state["filter_scenario_preset"]]
-    if scenario is not None:
-        for key, value in zip(SIMULATION_INPUT_KEYS, scenario):
-            st.session_state[key] = value
-
-
-# -----------------------------------------------------------------------------
-# 5. Sidebar: FILTERS & PARAMETERS ONLY
-# -----------------------------------------------------------------------------
-st.sidebar.markdown(
-    f"""
-    <div style="padding: 6px 2px 14px 2px; border-bottom: 1px solid {PALETTE['border_subtle']}; margin-bottom: 14px;">
-        <div style="font-size: 0.70rem; font-weight: 700; letter-spacing: 0.1em; color: {PALETTE['accent_primary']}; text-transform: uppercase;">
-            Early Warning Command Center
-        </div>
-        <div style="font-size: 1.25rem; font-weight: 800; color: {PALETTE['text_primary']}; margin-top: 2px; letter-spacing: -0.01em;">
-            Tamakoshi Flood AI
-        </div>
-        <div style="font-size: 0.78rem; color: {PALETTE['text_muted']}; margin-top: 2px;">
-            Dolakha Watershed, Nepal
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# Operational Mode Filter
-st.sidebar.markdown("<div class='kpi-label'>Telemetry Operating Mode</div>", unsafe_allow_html=True)
-op_mode = st.sidebar.radio(
-    "Select Operating Mode:",
-    ["Operational Live Telemetry", "Simulation & Stress Testing"],
-    index=0,
-    label_visibility="collapsed",
-    key="filter_op_mode",
-)
-
-if op_mode == "Operational Live Telemetry":
-    # Live Mode Filters
-    st.sidebar.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-    st.sidebar.markdown("<div class='kpi-label'>Telemetry Lookback Window</div>", unsafe_allow_html=True)
-    past_days_filter = st.sidebar.slider(
-        "Lookback Days",
-        min_value=3,
-        max_value=14,
-        value=7,
-        help="Historical lookback window for GloFAS river discharge and basin precipitation.",
-        key="filter_lookback_days",
-    )
-
-    refresh_clicked = st.sidebar.button("Refresh Telemetry Stream", use_container_width=True, key="btn_refresh_live")
-    if refresh_clicked:
-        st.cache_data.clear()
-        st.sidebar.success("Telemetry cache refreshed.")
-
-    # Fetch live telemetry
-    with st.spinner("Connecting to Open-Meteo GloFAS & Basin Weather APIs..."):
-        try:
-            live_payload = route_live_basin_telemetry(past_days=past_days_filter)
-        except Exception as e:
-            st.sidebar.warning(f"Telemetry API error, using verified baseline: {e}")
-            live_payload = route_live_basin_telemetry(past_days=7)
-
-    active_inputs = live_payload["inputs"]
-    data_source_label = live_payload["status_label"]
-    data_synced_at = live_payload["synced_at"]
-    live_history_df = live_payload["history_df"]
-    is_live_active = True
-
-else:
-    # Simulation Mode Filters
-    st.sidebar.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-    st.sidebar.markdown("<div class='kpi-label'>Calibrated Watershed Scenario</div>", unsafe_allow_html=True)
-    if "filter_scenario_preset" not in st.session_state:
-        st.session_state["filter_scenario_preset"] = next(iter(SCENARIOS))
-    if not all(key in st.session_state for key in SIMULATION_INPUT_KEYS):
-        initial_scenario = SCENARIOS[st.session_state["filter_scenario_preset"]]
-        initial_values = initial_scenario or CUSTOM_SIMULATION_DEFAULTS
-        for key, value in zip(SIMULATION_INPUT_KEYS, initial_values):
-            st.session_state[key] = value
-    scenario_choice = st.sidebar.selectbox(
-        "Scenario preset",
-        list(SCENARIOS.keys()),
-        key="filter_scenario_preset",
-        on_change=apply_scenario_preset,
-    )
-
-    with st.sidebar.expander("Station Discharge Sensors (m³/s)", expanded=True):
-        sim_q_mid = st.number_input("Singati target flow (m³/s)", step=0.1, key="sim_q_mid")
-        sim_q_yesterday = st.number_input("Singati flow yesterday (m³/s)", step=0.1, key="sim_q_yesterday")
-        sim_q_glacier = st.number_input("Tsho Rolpa glacier outflow (m³/s)", step=0.05, key="sim_q_glacier")
-        sim_q_upper = st.number_input("Gongar Dam intake flow (m³/s)", step=0.1, key="sim_q_upper")
-        sim_q_lower = st.number_input("Lower confluence flow (m³/s)", step=0.1, key="sim_q_lower")
-
-    with st.sidebar.expander("Precipitation & Cloudburst Dynamics", expanded=False):
-        sim_rain_mid = st.number_input("Valley rain today (mm)", step=1.0, key="sim_rain_mid")
-        sim_rain_glacier = st.number_input("Glacier rain today (mm)", step=1.0, key="sim_rain_glacier")
-        sim_rain_3d = st.number_input("3-day cumulative rain (mm)", step=5.0, key="sim_rain_3d")
-        sim_rain_7d = st.number_input("7-day cumulative rain (mm)", step=5.0, key="sim_rain_7d")
-        sim_rain_hours = st.slider("Rain Duration Hours (Cloudburst = low)", 1, 24, int(st.session_state.get("sim_rain_hours", CUSTOM_SIMULATION_DEFAULTS[9])), key="sim_rain_hours")
-
-    with st.sidebar.expander("Soil Moisture & Thermal Melt Dynamics", expanded=False):
-        sim_soil_sat = st.slider("Deep soil saturation (%)", 10, 50, int(st.session_state.get("sim_soil_sat", CUSTOM_SIMULATION_DEFAULTS[10])), key="sim_soil_sat")
-        sim_tmax = st.number_input("Valley max temperature (°C)", step=0.5, key="sim_tmax")
-        sim_tmin = st.number_input("Valley min temperature (°C)", step=0.5, key="sim_tmin")
-        sim_snow = st.number_input("Glacier snowfall today (cm)", step=0.5, key="sim_snow")
-        sim_solar = st.number_input("Solar radiation (MJ/m²)", step=0.5, key="sim_solar")
-        sim_month = st.slider("Month of year", 1, 12, int(st.session_state.get("sim_month", CUSTOM_SIMULATION_DEFAULTS[15])), key="sim_month")
-
-    active_inputs = {
-        "q_mid": sim_q_mid, "q_yesterday": sim_q_yesterday, "q_glacier": sim_q_glacier,
-        "q_upper": sim_q_upper, "q_lower": sim_q_lower, "rain_mid": sim_rain_mid,
-        "rain_glacier": sim_rain_glacier, "rain_3d": sim_rain_3d, "rain_7d": sim_rain_7d,
-        "rain_hours": sim_rain_hours, "soil_sat_pct": sim_soil_sat, "tmax": sim_tmax,
-        "tmin": sim_tmin, "snow_glacier": sim_snow, "solar_rad": sim_solar, "month": sim_month,
-    }
-    data_source_label = f"MANUAL SIMULATION ({scenario_choice})"
-    npt_now = datetime.now(timezone(timedelta(hours=5, minutes=45))).strftime("%Y-%m-%d %H:%M NPT")
-    data_synced_at = f"{npt_now} (Interactive)"
-    live_history_df = pd.DataFrame([
-        {"Date": "T-3d", "Singati (m³/s)": sim_q_yesterday * 0.92, "Tsho Rolpa (m³/s)": sim_q_glacier * 0.90, "Gongar (m³/s)": sim_q_upper * 0.91, "Lower Tamakoshi (m³/s)": sim_q_lower * 0.92, "Rain (mm)": sim_rain_3d * 0.25},
-        {"Date": "T-2d", "Singati (m³/s)": sim_q_yesterday * 0.95, "Tsho Rolpa (m³/s)": sim_q_glacier * 0.94, "Gongar (m³/s)": sim_q_upper * 0.95, "Lower Tamakoshi (m³/s)": sim_q_lower * 0.95, "Rain (mm)": sim_rain_3d * 0.35},
-        {"Date": "Yesterday", "Singati (m³/s)": sim_q_yesterday, "Tsho Rolpa (m³/s)": sim_q_glacier * 0.98, "Gongar (m³/s)": sim_q_upper, "Lower Tamakoshi (m³/s)": sim_q_lower, "Rain (mm)": sim_rain_3d * 0.40},
-        {"Date": "Today", "Singati (m³/s)": sim_q_mid, "Tsho Rolpa (m³/s)": sim_q_glacier, "Gongar (m³/s)": sim_q_upper, "Lower Tamakoshi (m³/s)": sim_q_lower, "Rain (mm)": sim_rain_mid},
-    ])
-    is_live_active = False
+active_inputs = live_payload["inputs"]
+data_source_label = live_payload["status_label"]
+data_synced_at = live_payload["synced_at"]
+live_history_df = live_payload["history_df"]
 
 # -----------------------------------------------------------------------------
 # 6. Core ML Prediction Engine (Exact 58 Features & 6 Models)
@@ -569,35 +419,10 @@ individual_preds = forecast["individual_preds"]
 severity = classify_alert_severity(pred_flow, flood_prob)
 
 # -----------------------------------------------------------------------------
-# 7. MAIN VIEW HIERARCHY: Top Command Header & Data Lineage
+# 7. MAIN VIEW HIERARCHY: Editorial River Header
 # -----------------------------------------------------------------------------
-top_c1, top_c2 = st.columns([8, 4])
-with top_c1:
-    st.markdown(
-        f"""
-        <div style="margin-bottom: 4px;">
-            <span style="font-size: 1.55rem; font-weight: 800; color: {PALETTE['text_primary']}; letter-spacing: -0.01em;">
-                Tamakoshi River Flood Early Warning Command Center
-            </span>
-        </div>
-        <div style="font-size: 0.84rem; color: {PALETTE['text_secondary']};">
-            Dolakha Watershed • Tsho Rolpa Glacier (4,580m) to Singati Gorge (1,250m) • Hydrological Decision Support
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-with top_c2:
-    st.markdown(
-        f"""
-        <div style="text-align: right; font-size: 0.80rem; color: {PALETTE['text_muted']}; padding-top: 4px;">
-            <div><b>Data Stream:</b> <span class="status-badge" style="margin-left: 6px; border-color:{PALETTE['accent_primary']}44;"><span class="status-dot" style="background:{PALETTE['normal']['color']}; box-shadow:0 0 8px {PALETTE['normal']['color']};"></span><span style="color:{PALETTE['text_primary']};">{data_source_label}</span></span></div>
-            <div style="margin-top: 6px;"><b>Last Synced:</b> <span style="color: {PALETTE['text_secondary']}; font-weight: 600;">{data_synced_at}</span></div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+render_river_hero(data_source_label, data_synced_at)
+st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 8. HIERARCHY STEP 1: Emergency Action & Severity Status Banner

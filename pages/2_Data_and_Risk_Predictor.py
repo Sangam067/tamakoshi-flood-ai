@@ -16,15 +16,19 @@ from services.tamakoshi_api import (
     load_model_bundle,
     route_live_basin_telemetry,
 )
+from ui_theme import render_page_intro, render_site_navigation
 
 st.set_page_config(
     page_title="Data & Risk Predictor | Tamakoshi Flood AI",
     page_icon="🌊",
     layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
-st.title("Data Entry & Risk Prediction")
-st.caption(
+render_site_navigation("predictor")
+render_page_intro(
+    "DATA ENTRY · MODEL OUTPUT",
+    "Risk predictor",
     "Review the latest available measurements, enter updated basin data, "
     "and run the Tamakoshi flood-risk model."
 )
@@ -72,6 +76,53 @@ widget_keys = {
 }
 for input_name, key in widget_keys.items():
     st.session_state.setdefault(key, defaults[input_name])
+
+scenario_order = (
+    "q_mid",
+    "q_yesterday",
+    "q_glacier",
+    "q_upper",
+    "q_lower",
+    "rain_mid",
+    "rain_glacier",
+    "rain_3d",
+    "rain_7d",
+    "rain_hours",
+    "soil_sat_pct",
+    "tmax",
+    "tmin",
+    "snow_glacier",
+    "solar_rad",
+    "month",
+)
+scenario_presets = {
+    "Live telemetry / manual entry": None,
+    "Cloudburst and glacial surge": (
+        6.60, 5.55, 1.15, 4.35, 9.80, 58.0, 42.0, 135.0, 230.0, 3, 48, 24.0, 15.5, 0.0, 22.5, 8
+    ),
+    "Active monsoon surge": (
+        5.85, 5.20, 0.85, 3.70, 8.40, 28.0, 20.0, 68.0, 135.0, 7, 41, 22.0, 14.0, 0.0, 19.5, 7
+    ),
+    "Dry winter baseflow": (
+        0.35, 0.36, 0.05, 0.22, 0.55, 0.0, 0.0, 0.5, 2.0, 0, 22, 14.0, 2.5, 0.0, 14.5, 2
+    ),
+}
+
+
+def apply_scenario_preset() -> None:
+    preset = scenario_presets[st.session_state["risk_scenario_preset"]]
+    if preset is not None:
+        for input_name, value in zip(scenario_order, preset):
+            st.session_state[widget_keys[input_name]] = value
+
+
+st.session_state.setdefault("risk_scenario_preset", "Live telemetry / manual entry")
+st.selectbox(
+    "Starting point",
+    options=list(scenario_presets),
+    key="risk_scenario_preset",
+    on_change=apply_scenario_preset,
+)
 
 with st.form("tamakoshi_risk_input_form"):
     st.subheader("River discharge")
