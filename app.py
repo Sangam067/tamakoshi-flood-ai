@@ -1123,7 +1123,7 @@ with tab_gauges:
 
     with g1:
         fig_g1 = go.Figure(go.Indicator(
-            mode="gauge+number", value=rain_intensity, number={"suffix": " mm/h"},
+            mode="gauge+number", value=rain_intensity, number={"suffix": " mm/h", "font": {"size": 24}},
             title={"text": "Cloudburst Rain Intensity", "font": {"size": 13, "color": PALETTE["text_primary"]}},
             gauge={
                 "axis": {"range": [0, 40], "tickcolor": PALETTE["text_secondary"]},
@@ -1136,12 +1136,17 @@ with tab_gauges:
                 "threshold": {"line": {"color": PALETTE["emergency"]["color"], "width": 3}, "value": 18.0},
             },
         ))
-        fig_g1.update_layout(template="plotly_dark", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
-        st.plotly_chart(fig_g1, use_container_width=True)
+        fig_g1.update_layout(
+            template="plotly_dark",
+            paper_bgcolor=PALETTE["bg_surface"],
+            height=270,
+            margin=dict(l=18, r=18, t=38, b=16),
+        )
+        st.plotly_chart(fig_g1, width="stretch")
 
     with g2:
         fig_g2 = go.Figure(go.Indicator(
-            mode="gauge+number", value=active_inputs["rain_7d"], number={"suffix": " mm"},
+            mode="gauge+number", value=active_inputs["rain_7d"], number={"suffix": " mm", "font": {"size": 24}},
             title={"text": "Antecedent 7-Day Rain", "font": {"size": 13, "color": PALETTE["text_primary"]}},
             gauge={
                 "axis": {"range": [0, 300], "tickcolor": PALETTE["text_secondary"]},
@@ -1154,12 +1159,17 @@ with tab_gauges:
                 "threshold": {"line": {"color": PALETTE["emergency"]["color"], "width": 3}, "value": 140.0},
             },
         ))
-        fig_g2.update_layout(template="plotly_dark", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
-        st.plotly_chart(fig_g2, use_container_width=True)
+        fig_g2.update_layout(
+            template="plotly_dark",
+            paper_bgcolor=PALETTE["bg_surface"],
+            height=270,
+            margin=dict(l=18, r=18, t=38, b=16),
+        )
+        st.plotly_chart(fig_g2, width="stretch")
 
     with g3:
         fig_g3 = go.Figure(go.Indicator(
-            mode="gauge+number", value=glacier_temp, number={"suffix": " °C"},
+            mode="gauge+number", value=glacier_temp, number={"suffix": " °C", "font": {"size": 24}},
             title={"text": "Tsho Rolpa (4,580m) Temp", "font": {"size": 13, "color": PALETTE["text_primary"]}},
             gauge={
                 "axis": {"range": [0, 30], "tickcolor": PALETTE["text_secondary"]},
@@ -1172,12 +1182,17 @@ with tab_gauges:
                 "threshold": {"line": {"color": PALETTE["emergency"]["color"], "width": 3}, "value": 15.0},
             },
         ))
-        fig_g3.update_layout(template="plotly_dark", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
-        st.plotly_chart(fig_g3, use_container_width=True)
+        fig_g3.update_layout(
+            template="plotly_dark",
+            paper_bgcolor=PALETTE["bg_surface"],
+            height=270,
+            margin=dict(l=18, r=18, t=38, b=16),
+        )
+        st.plotly_chart(fig_g3, width="stretch")
 
     with g4:
         fig_g4 = go.Figure(go.Indicator(
-            mode="gauge+number", value=active_inputs["soil_sat_pct"], number={"suffix": "%"},
+            mode="gauge+number", value=active_inputs["soil_sat_pct"], number={"suffix": "%", "font": {"size": 24}},
             title={"text": "Vadose Deep Soil Saturation", "font": {"size": 13, "color": PALETTE["text_primary"]}},
             gauge={
                 "axis": {"range": [0, 60], "tickcolor": PALETTE["text_secondary"]},
@@ -1190,8 +1205,13 @@ with tab_gauges:
                 "threshold": {"line": {"color": PALETTE["emergency"]["color"], "width": 3}, "value": 42.0},
             },
         ))
-        fig_g4.update_layout(template="plotly_dark", paper_bgcolor=PALETTE["bg_surface"], height=200, margin=dict(l=14, r=14, t=28, b=8))
-        st.plotly_chart(fig_g4, use_container_width=True)
+        fig_g4.update_layout(
+            template="plotly_dark",
+            paper_bgcolor=PALETTE["bg_surface"],
+            height=270,
+            margin=dict(l=18, r=18, t=38, b=16),
+        )
+        st.plotly_chart(fig_g4, width="stretch")
 
 # ----------------- Tab 4: Corridor Station Telemetry -----------------
 with tab_table:
