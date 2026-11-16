@@ -1,7 +1,9 @@
 """Show live Tamakoshi telemetry and recent observed discharge risk."""
 
+import html
 import os
 import sys
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -290,3 +292,79 @@ else:
         width="stretch",
         hide_index=True,
     )
+
+st.divider()
+st.subheader("Send announcement")
+st.caption("Create a demo announcement and preview it in this page's local feed.")
+
+announcement_styles = {
+    "Flood warning": ("CRITICAL ALERT", "#EF4444"),
+    "High-flow advisory": ("RIVER ADVISORY", "#F97316"),
+    "Safety notice": ("SAFETY NOTICE", "#38BDF8"),
+    "All clear": ("ALL CLEAR", "#10B981"),
+}
+
+with st.form("tamakoshi_announcement_form"):
+    alert_type = st.selectbox("Alert type", list(announcement_styles))
+    announcement_message = st.text_area(
+        "Announcement message",
+        placeholder="Write the message to show in the announcement feed...",
+        max_chars=500,
+    )
+    announcement_submitted = st.form_submit_button(
+        "Send announcement",
+        type="primary",
+    )
+
+if announcement_submitted:
+    if not announcement_message.strip():
+        st.error("Enter an announcement message before sending.")
+    else:
+        nepal_timezone = timezone(timedelta(hours=5, minutes=45))
+        announcement = {
+            "alert_type": alert_type,
+            "message": announcement_message.strip(),
+            "sent_at": datetime.now(nepal_timezone).strftime("%d %b %Y, %I:%M %p NPT"),
+        }
+        announcements = st.session_state.setdefault("tamakoshi_announcements", [])
+        st.session_state["tamakoshi_announcements"] = [announcement] + announcements[:4]
+        st.success("Demo announcement published to the in-app feed.")
+
+st.caption(
+    "Demo preview only: announcements are visible in this browser session and "
+    "are not delivered to external recipients."
+)
+
+announcements = st.session_state.setdefault("tamakoshi_announcements", [])
+if announcements:
+    st.markdown("#### Recent announcements")
+    for item in announcements:
+        label, color = announcement_styles[item["alert_type"]]
+        safe_label = html.escape(label)
+        safe_alert_type = html.escape(item["alert_type"])
+        safe_message = html.escape(item["message"]).replace("\n", "<br>")
+        safe_sent_at = html.escape(item["sent_at"])
+        st.markdown(
+            f"""
+            <article style="border:1px solid #34445A;border-left:5px solid {color};
+                            border-radius:10px;background:#142235;padding:16px 18px;
+                            margin:10px 0 14px;">
+              <div style="display:flex;justify-content:space-between;gap:12px;
+                          flex-wrap:wrap;align-items:center;">
+                <strong style="color:{color};letter-spacing:.08em;font-size:.78rem;">
+                  {safe_label}
+                </strong>
+                <span style="color:#BDCADB;font-size:.78rem;">{safe_sent_at}</span>
+              </div>
+              <div style="margin-top:7px;color:#F3F6FB;font-weight:650;">
+                {safe_alert_type}
+              </div>
+              <p style="margin:8px 0 0;color:#E2E8F0;line-height:1.55;
+                        white-space:normal;">{safe_message}</p>
+              <div style="margin-top:10px;color:#94A3B8;font-size:.74rem;">
+                DEMO · In-app preview
+              </div>
+            </article>
+            """,
+            unsafe_allow_html=True,
+        )
